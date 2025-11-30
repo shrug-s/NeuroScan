@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NeuroScan Full Cognitive Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background: #f8f7fc;
+            margin: 0;
+            display: flex;
+        }
+
+        nav {
+            background: #e9e5f5;
+            width: 260px;
+            padding: 20px;
+            box-shadow: inset -1px 0 0 #d4cbe7;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            text-align: left;
+            padding: 12px 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            color: #372f58;
+            transition: 0.2s;
+        }
+
+        nav button:hover {
+            background: #d6d0ea;
+        }
+
+        main {
+            flex: 1;
+            padding: 30px 50px;
+            overflow-y: auto;
+        }
+
+        header {
+            background: #5b4b8a;
+            color: white;
+            padding: 20px 30px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        h2 {
+            color: #5b4b8a;
+        }
+
+        .section {
+            display: none;
+            margin-bottom: 40px;
+        }
+
+        .test-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        canvas {
+            border: 2px solid #333;
+            border-radius: 8px;
+            display: block;
+            margin: 10px auto;
+            cursor: crosshair;
+        }
+
+        .analyze-btn {
+            background: #7e66c6;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .analyze-btn:hover {
+            background: #594c8b;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            margin: 5px 0 10px;
+            font-size: 0.95rem;
+        }
+
+        textarea {
+            min-height: 80px;
+        }
+
+        .result-box {
+            background: #f3f1f9;
+            border-left: 5px solid #5b4b8a;
+            padding: 15px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <button onclick="showPage('scan')">🧠 Scan Analysis</button>
+        <button onclick="showPage('cognition')">⚙️ Cognitive Function Test</button>
+        <button onclick="showPage('quiz')">📋 Patient Questionnaire</button>
+        <button onclick="showPage('results')">📊 Prediction & Report</button>
+        <button onclick="showPage('reference')">📚 Reference Sheets</button>
+        <button onclick="showPage('treatment')">⚗️ Treatment Library</button>
+        <button onclick="showPage('disclaimer')">⚖️ Disclaimer & Sources</button>
+    </nav>
+
+    <main>
+        <header>NeuroScan</header>
+
+        <!-- SCAN SECTION -->
+        <div id="scan" class="section" style="display:block;">
+            <h2>Scan Analysis</h2>
+            <label>Select Scan Type:</label>
+            <select id="scanType">
+                <option>MRI</option>
+                <option>fMRI</option>
+                <option>PET</option>
+                <option>CT</option>
+            </select>
+            <label>Upload Scan:</label>
+            <input type="file" accept="image/*,.nii,.dcm">
+            <div class="result-box" style="margin-top:20px;">Status: Awaiting scan input...</div>
+        </div>
+
+        <!-- COGNITION TESTS -->
+        <div id="cognition" class="section">
+            <h2>Cognitive Test</h2>
+
+            <!-- CLOCK DRAWING -->
+            <div class="test-card">
+                <h3>🕒 Clock-Drawing Test</h3>
+                <p>Draw a clock showing <strong>10 past 11</strong>:</p>
+                <canvas id="clockCanvas" width="300" height="300"></canvas>
+                <button class="analyze-btn" onclick="clearClock()">Clear</button>
+                <p id="clockScore"></p>
+            </div>
+
+            <!-- REACTION TIME -->
+            <div class="test-card">
+                <h3>⚡ Reaction Time Test</h3>
+                <button class="analyze-btn" id="reactionBtn">Start</button>
+                <p id="reactionResult"></p>
+            </div>
+
+            <!-- ORIENTATION -->
+            <div class="test-card">
+                <h3>📍 Orientation Test</h3>
+                <label>What is today's date?</label><input id="oriDate">
+                <label>Where are you right now?</label><input id="oriPlace">
+                <label>What city are you in?</label><input id="oriCity">
+                <button class="analyze-btn" onclick="checkOrientation()">Submit</button>
+                <p id="oriResult"></p>
+            </div>
+
+            <!-- 3 WORD RECALL -->
+            <div class="test-card">
+                <h3>🧩 3-Word Recall</h3>
+                <button class="analyze-btn" onclick="showWords()">Show Words</button>
+                <p id="wordsShown"></p>
+                <label>Enter the words you remember:</label><input id="recallInput">
+                <button class="analyze-btn" onclick="checkRecall()">Check</button>
+                <p id="recallResult"></p>
+            </div>
+
+            <!-- VERBAL FLUENCY -->
+            <div class="test-card">
+                <h3>🗣️ Verbal Fluency Test</h3>
+                <p>Name as many animals as possible in 60 seconds:</p>
+                <textarea id="fluencyBox"></textarea>
+                <button class="analyze-btn" onclick="checkFluency()">Submit</button>
+                <p id="fluencyResult"></p>
+            </div>
+        </div>
+
+        <!-- PATIENT QUESTIONNAIRE -->
+        <div id="quiz" class="section">
+            <h2>Patient Questionnaire</h2>
+            <label>Age:</label><input type="number" id="age" min="0">
+            <label>Social Isolation (1=active, 5=isolated):</label><input type="range" min="1" max="5" id="isolation"
+                value="3">
+            <label>Family History of Neurodegenerative Disease?</label>
+            <select id="fhistory" onchange="toggleDiseaseInput()">
+                <option>No</option>
+                <option>Yes</option>
+                <option>Unsure</option>
+            </select>
+            <div id="familyDiseaseDiv" style="display:none;"><label>Specify disease(s):</label><input
+                    id="familyDisease"></div>
+            <label>Lifestyle Overview:</label><textarea id="lifestyle"></textarea>
+            <label>Current Symptoms (click to select):</label>
+            <div id="symptomButtons">
+                <span class="symptom-button">Memory loss</span>
+                <span class="symptom-button">Poor judgement</span>
+                <span class="symptom-button">Confusion</span>
+                <span class="symptom-button">Fatigue</span>
+            </div>
+            <button class="analyze-btn" onclick="calculateRisk()">Analyze Risk</button>
+        </div>
+
+        <!-- RESULTS -->
+        <div id="results" class="section">
+            <h2>Prediction & Report</h2>
+            <div id="reportBox" class="result-box">Complete questionnaire to generate report.</div>
+        </div>
+
+        <script>
+            /* ====== PAGE NAV ====== */
+            function showPage(id) { document.querySelectorAll('.section').forEach(s => s.style.display = 'none'); document.getElementById(id).style.display = 'block'; }
+            function toggleDiseaseInput() { document.getElementById('familyDiseaseDiv').style.display = (document.getElementById('fhistory').value === "Yes") ? 'block' : 'none'; }
+
+            /* ====== CLOCK DRAWING WITH TOUCH SUPPORT ====== */
+            const canvas = document.getElementById("clockCanvas");
+            const ctx = canvas.getContext("2d");
+            let drawing = false;
+
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                if (e.touches) return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+                return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            }
+
+            canvas.addEventListener("mousedown", (e) => { drawing = true; ctx.beginPath(); let p = getPos(e); ctx.moveTo(p.x, p.y); });
+            canvas.addEventListener("mousemove", (e) => { if (!drawing) return; let p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = "#000"; ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.stroke(); });
+            canvas.addEventListener("mouseup", () => { drawing = false; ctx.closePath(); scoreClock(); });
+            canvas.addEventListener("mouseleave", () => { drawing = false; });
+            canvas.addEventListener("touchstart", (e) => { drawing = true; ctx.beginPath(); let p = getPos(e); ctx.moveTo(p.x, p.y); });
+            canvas.addEventListener("touchmove", (e) => { e.preventDefault(); if (!drawing) return; let p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+            canvas.addEventListener("touchend", () => { drawing = false; ctx.closePath(); scoreClock(); });
+
+            function clearClock() { ctx.clearRect(0, 0, canvas.width, canvas.height); document.getElementById('clockScore').textContent = ''; }
+
+            // Simple scoring: checks if hands roughly point at 10 and 2
+            function scoreClock() {
+                // placeholder scoring: in real app would detect angles
+                let score = Math.floor(Math.random() * 6) + 5; // 5-10 points placeholder
+                document.getElementById('clockScore').textContent = `Clock Drawing Score: ${score}/10`;
+            }
+
+            /* ====== REACTION TIME ====== */
+            let reactionStart;
+            document.getElementById('reactionBtn').addEventListener('click', () => {
+                const btn = document.getElementById('reactionBtn');
+                btn.disabled = true;
+                btn.textContent = "Wait for green...";
+                const delay = Math.random() * 3000 + 1000;
+                setTimeout(() => {
+                    document.body.style.background = "lightgreen";
+                    reactionStart = performance.now();
+                    btn.textContent = "CLICK NOW!";
+                    btn.disabled = false;
+                    btn.onclick = () => {
+                        let rt = performance.now() - reactionStart;
+                        document.getElementById('reactionResult').textContent = `Reaction Time: ${Math.round(rt)} ms`;
+                        document.body.style.background = "#f8f7fc";
+                        btn.textContent = "Start";
+                        btn.onclick = null;
+                    }
+                }, delay);
+            });
+
+            /* ====== ORIENTATION ====== */
+            function checkOrientation() {
+                let score = 0;
+                if (document.getElementById('oriDate').value) score += 1;
+                if (document.getElementById('oriPlace').value) score += 1;
+                if (document.getElementById('oriCity').value) score += 1;
+                document.getElementById('oriResult').textContent = `Orientation Score: ${score}/3`;
+            }
+
+            /* ====== 3 WORD RECALL ====== */
+            const wordsList = ["Apple", "Table", "Penny"];
+            function showWords() { document.getElementById('wordsShown').textContent = wordsList.join(", "); }
+            function checkRecall() {
+                const input = document.getElementById('recallInput').value.split(",").map(w => w.trim().toLowerCase());
+                const score = wordsList.filter(w => input.includes(w.toLowerCase())).length;
+                document.getElementById('recallResult').textContent = `3-Word Recall Score: ${score}/3`;
+            }
+
+            /* ====== VERBAL FLUENCY ====== */
+            function checkFluency() {
+                const words = document.getElementById('fluencyBox').value.split(/\s|,/).filter(w => w.trim());
+                document.getElementById('fluencyResult').textContent = `You named ${words.length} words in 60 seconds.`;
+            }
+
+            /* ====== SYMPTOMS SELECTION ====== */
+            document.querySelectorAll('.symptom-button').forEach(btn => {
+                btn.addEventListener('click', () => btn.classList.toggle('selected'));
+            });
+
+            <div id="reference" class="section">
+                <h2>Reference Sheets</h2>
+                <details>
+                    <summary>Sleep Quality</summary>
+                    <p><strong>Poor:</strong> less than 7 hours, frequent awakenings, sleep latency>30
+                        mins<br><strong>Moderate:</strong> 7–8 hours,
+                            occasional interruptions<br><strong>Good:</strong> 7–9 hours, consistent bed/wake schedule,
+                                restful night.</p>
+                        </details>
+                        <details>
+                            <summary>Physical Activity</summary>
+                            <p><strong>Sedentary</strong>:</strong>30 mins/wk or less<br><strong>Moderately Active:</strong>60
+                                mins/wk
+                                <br><strong>Highly Active:</strong>150+ mins/wk
+                                </p>
+                        </details>
+                        <details>
+                            <summary>Diet Quality</summary>
+                            <p><strong>Poor:</strong>High processed food, low nutrients, frequent
+                                alcohol<br><strong>Moderate:</strong>Balanced occasional
+                                    indulgence<br><strong>Good:</strong>Mediterranean/all-plant/omega-3 rich, limited alcohol.</p>
+                                </details>
+                                <details>
+                                    <summary>Social Engagement</summary>
+                                    <p><strong>Poor:</strong>Complete isolation, 1-2 interactions/wk<br><strong>Moderate:</strong>Some
+                                        social activities,
+                                        3-4x interactions/wk<br><strong>Good:</strong>Regular meaningful social engagement, 4x+
+                                            interactions/wk.</p>
+                                    </details>
+                                        <details>
+                                            <summary>Genetic Factors & Proteins</summary>
+                                            <p><strong>Genetic mutations:</strong> ApoE ε4, C9orf72, APP, PSEN1, PSEN2, TREM2, CX3CR1, MHC,
+                                                HLA-DRB5. </p>
+                                            <p><strong>Protein pathologies:</strong> Tau, β-Amyloid, α-Synuclein, TDP-43, Prions.</p>
+                                            <p><strong>Mental health conditions:</strong> Cluster-b personality disorders, anxiety disorders,
+                                                Neurodivergent
+                                                disorders.</p>
+                                            <p><strong>Physical Conditions:</strong> high blood pressure, high cholesterol, diabetes, obesity,
+                                                stroke, and head
+                                                trauma.</p>
+                                        </details>
+                                    </div>
+
+                                    <div id="treatment" class="section">
+                                        <h2>Treatment Library</h2>
+                                        <details>
+                                            <summary>Medical Treatments</summary>
+                                            <ul>
+                                                <li>Medications for early onset dementia:</li>
+                                                <li>-cholinesterase inhibitors</li>
+                                                <li>-donepezil (aricept, adlarity)</li>
+                                                <li>-rivastigmine (exelon)</li>
+                                                <li>-galantamine (zunveyl)</li>
+                                                <li>-leqembi/lecenemab</li>
+                                                <li>-donanemab</li>
+
+                                                <li>Medications for parkinsons:-
+                                                    <li>Amyloid targeting meds:-</li>
+                                                    <li></li>-lecanemab (leqembi)</li>
+                                                <li>-donanemab (kisunla)</li>
+                                            </li>
+
+                                            <li>Symptom targeting meds:-</li>
+                                            <li>-cholinesterase inhibitors</li>
+                                            <li>-benzgalantamine(zunveyl) → mild/moderate alz</li>
+                                            <li>-donepezil(aricept) → mild/severe alz</li>
+                                            <li>-galantamine(razadyne) → mild/moderate alz</li>
+                                            <li>-rivastigmine(exelon) → mild/moderate alz/parkinsons</li>
+                                            <li>-glutamate regulators</li>
+                                            <li>-memantine(namenda) → mod/severe alz</li>
+                                            <li>Note:- they pair donepezil + memantine (namzaric) for mod/severe alz</li>
+
+                                            <li>Non-cognitive symptoms (behavioral/psychological)
+                                                -orexin receptor antagonist
+                                                -suvorexant(belsomra) → insomnia but its effective w mild/mod alz
+                                                -atypical antipsychotics ex. (brexpiprazole- rexulti)
+                                                -antidepressants/SSRI’s for mood stabilization
+                                            </li>
+                                        </ul>
+                                </details>
+                                <details>
+                                    <summary>Therapies and Rehabilitation</summary>
+                                    <ul>
+                                        <li>Cognitive rehabilitation & memory training.</li>
+                                        <li>Exercise programs (aerobic + resistance).</li>
+                                        <li>Social participation & engaging activities.</li>
+                                        <li>Sleep hygiene, stress management.</li>
+                                    </ul>
+                                </details>
+                                <details>
+                                    <summary>Other Supportive Measures</summary>
+                                    <p>Late-stage care: advance planning, communication aids, nutritional/respiratory support, caregiver
+                                        education.</p>
+                                </details>
+                            </div>
+
+                            <div id="disclaimer" class="section">
+                                <h2>Disclaimer & Sources</h2>
+                                <p>This tool is for educational/research demonstration only. Not a substitute for medical diagnosis or
+                                    treatment. Consult qualified clinicians for any decisions.</p>
+                                <h3>Sources</h3>
+                                <ul>
+                                    <li>World Health Organization (2023). Neurological Disorders: Public Health Challenges.</li>
+                                    <li>National Institute on Aging. Alzheimer’s Treatment & Research.</li>
+                                    <li>Kandel et al., <em>Principles of Neural Science</em>, 6th Edition.</li>
+                                    <li>NCBI Bookshelf. C9orf72 and neurodegenerative disease genetics.</li>
+                                </ul>
+                            </div>
+                        </main>
+
+                        <script>
+                            function showPage(id) {
+                                document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+                            document.getElementById(id).style.display = 'block';
+        }
+                            function toggleDiseaseInput() {
+                                document.getElementById('familyDiseaseDiv').style.display = (document.getElementById('fhistory').value === "Yes") ? 'block' : 'none';
+        }
+        document.querySelectorAll('.symptom-button').forEach(btn => {
+                                btn.addEventListener('click', () => {
+                                    btn.classList.toggle('selected');
+                                });
+        });
+                            function calculateRisk() {
+                                let risk = 5; let reasons = [];
+                            const age = +document.getElementById('age').value || 0;
+            if (age > 60) {risk += 25; reasons.push("Age >60"); }
+            else if (age > 40) {risk += 10; reasons.push("Age >40"); }
+                            if (document.getElementById('brainInjury').value === "Yes") {risk += 10; reasons.push("Brain injury history"); }
+                            const isolation = +document.getElementById('isolation').value;
+            if (isolation >= 4) {risk += 8; reasons.push("Higher social isolation"); }
+                            if (document.getElementById('c9gene').checked) {risk += 5; reasons.push("C9orf72 gene mutation present"); }
+                            if (document.getElementById('app').checked) {risk += 5; reasons.push("APP gene mutation present"); }
+                            if (document.getElementById('psen1').checked) {risk += 5; reasons.push("PSEN1 gene mutation present"); }
+                            if (document.getElementById('psen2').checked) {risk += 5; reasons.push("PSEN2 gene mutation present"); }
+                            if (document.getElementById('trem2').checked) {risk += 5; reasons.push("TREM2 gene mutation present"); }
+                            if (document.getElementById('cx3cr1').checked) {risk += 5; reasons.push("CXCR1 gene mutation present"); }
+                            if (document.getElementById('hladrb5').checked) {risk += 5; reasons.push("HLA-DRB5 gene mutation present"); }
+                            if (document.getElementById('mhc').checked) {risk += 5; reasons.push("MHC gene mutation present"); }
+                            if (document.getElementById('apoe').checked) {risk += 10; reasons.push("ApoE ε4 gene mutation present"); }
+                            if (document.getElementById('fhistory').value === "Yes") {risk += 15; reasons.push("Family history"); }
+                            const lifestyle = document.getElementById('lifestyle').value.toLowerCase();
+                            if (lifestyle.includes("smoke") || lifestyle.includes("alcohol")) {risk += 10; reasons.push("Unhealthy lifestyle"); }
+                            if (lifestyle.includes("active") || lifestyle.includes("healthy")) {risk -= 5; reasons.push("Good lifestyle"); }
+                            const cond = document.getElementById('healthCond').value.toLowerCase();
+                            if (cond.includes("diabetes") || cond.includes("stroke") || cond.includes("high blood pressure") || cond.includes("high cholesterol") || cond.includes("obesity")) {risk += 8; reasons.push("Chronic/mental health condition"); }
+            const symptoms = Array.from(document.querySelectorAll('.symptom-button.selected')).map(b => b.textContent);
+            if (symptoms.length > 0) {risk += symptoms.length * 2; reasons.push(symptoms.length + " symptoms selected"); }
+                            risk = Math.max(0, Math.min(100, risk));
+            const cat = risk > 70 ? "High" : risk > 40 ? "Moderate" : "Low";
+                            const alz = (risk * 0.4).toFixed(1), park = (risk * 0.25).toFixed(1), als = (risk * 0.15).toFixed(1), ftd = (risk * 0.1).toFixed(1), lewy = (risk * 0.1).toFixed(1);
+                            document.getElementById('reportBox').innerHTML = `
+                            <strong>Overall ND Risk:</strong> ${risk}% (${cat})<br><br>
+                                <b>Disease Breakdown:</b>
+                                <ul><li>Alzheimer’s: ${alz}%</li><li>Parkinson’s: ${park}%</li><li>ALS: ${als}%</li><li>FTD: ${ftd}%</li><li>Lewy Body: ${lewy}%</li></ul>
+                                <b>Risk Factors:</b><ul>${reasons.map(r => `<li>${r}</li>`).join('')}</ul>
+                                <b>Selected Symptoms:</b> ${symptoms.length ? symptoms.join(', ') : 'None'}<br>
+                                    <b>Next Steps:</b><ul><li>Cognitive tests recommended (MMSE/MoCA).</li><li>See neurologist if Moderate–High risk.</li></ul>
+  `;
+            showPage('results');
+        }
+        </script>
+</body>
+
+</html>

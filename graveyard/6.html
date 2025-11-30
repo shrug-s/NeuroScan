@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neurodegenerative Disease Risk Analyzer</title>
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f4f3f8;
+            color: #222;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #4b2e83;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            font-size: 1.8rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        nav {
+            background-color: #351f66;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding: 0.8rem;
+        }
+
+        nav a {
+            color: #ddd;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            color: white;
+            border-bottom: 2px solid #b497ff;
+        }
+
+        section {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+        }
+
+        h2 {
+            color: #4b2e83;
+            border-bottom: 2px solid #c3b3ff;
+            padding-bottom: 0.5rem;
+        }
+
+        label {
+            display: block;
+            margin: 1rem 0 0.4rem;
+            font-weight: 600;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        button {
+            margin-top: 1.5rem;
+            background-color: #4b2e83;
+            color: white;
+            padding: 0.8rem 1.6rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #351f66;
+        }
+
+        #result {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #f2e9ff;
+            border-left: 4px solid #4b2e83;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>🧠 Neurodegenerative Disease Risk Analyzer</header>
+    <nav>
+        <a href="#quiz">Patient Data</a>
+        <a href="#scanner">Imaging Type</a>
+        <a href="#results">Analysis</a>
+    </nav>
+
+    <section id="quiz">
+        <h2>Patient Information</h2>
+        <form id="ndForm">
+            <label>Age:</label>
+            <input type="number" id="age" min="0" max="120" required>
+
+            <label>Gender:</label>
+            <select id="gender" required>
+                <option value="">Select</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+            </select>
+
+            <label>Level of Education:</label>
+            <select id="education" required>
+                <option value="">Select</option>
+                <option>Low (no high school)</option>
+                <option>Medium (high school)</option>
+                <option>High (college or above)</option>
+            </select>
+
+            <label>History of Brain Injury:</label>
+            <select id="brainInjury" required>
+                <option value="">Select</option>
+                <option>No</option>
+                <option>Yes</option>
+            </select>
+
+            <label>Social Isolation:</label>
+            <select id="isolation" required>
+                <option value="">Select</option>
+                <option>Low</option>
+                <option>Moderate</option>
+                <option>High</option>
+            </select>
+
+            <label>Family History of Neurodegenerative Diseases:</label>
+            <select id="familyHistory" required onchange="toggleDiseaseInput()">
+                <option value="">Select</option>
+                <option>No</option>
+                <option>Yes</option>
+                <option>Not sure</option>
+            </select>
+            <div id="diseaseField" style="display:none;">
+                <label>Specify Disease(s):</label>
+                <input type="text" id="diseaseType" placeholder="e.g., Alzheimer’s, Parkinson’s">
+            </div>
+
+            <label>Existing Illnesses (e.g., Diabetes, Depression, ADHD, etc.):</label>
+            <textarea id="illnesses" placeholder="List any diagnosed conditions"></textarea>
+
+            <label>Neurodivergence (if applicable):</label>
+            <select id="neurodivergence">
+                <option value="">Select</option>
+                <option>None</option>
+                <option>ADHD</option>
+                <option>Autism</option>
+                <option>Other</option>
+            </select>
+
+            <label>Lifestyle Factors:</label>
+            <textarea id="lifestyle" placeholder="Describe sleep, diet, activity, smoking/alcohol habits"></textarea>
+        </form>
+    </section>
+
+    <section id="scanner">
+        <h2>Preferred Brain Scan</h2>
+        <select id="scanType">
+            <option value="">Select</option>
+            <option>MRI</option>
+            <option>fMRI</option>
+            <option>PET</option>
+            <option>CT</option>
+        </select>
+    </section>
+
+    <section id="results">
+        <button onclick="analyzeData()">Run Analysis</button>
+        <div id="result"></div>
+    </section>
+
+    <script>
+        function toggleDiseaseInput() {
+            const history = document.getElementById("familyHistory").value;
+            document.getElementById("diseaseField").style.display = history === "Yes" ? "block" : "none";
+        }
+
+        function analyzeData() {
+            const age = parseInt(document.getElementById("age").value);
+            const gender = document.getElementById("gender").value;
+            const education = document.getElementById("education").value;
+            const brainInjury = document.getElementById("brainInjury").value;
+            const isolation = document.getElementById("isolation").value;
+            const familyHistory = document.getElementById("familyHistory").value;
+            const illnesses = document.getElementById("illnesses").value.toLowerCase();
+            const neurodivergence = document.getElementById("neurodivergence").value;
+            const lifestyle = document.getElementById("lifestyle").value.toLowerCase();
+            const scanType = document.getElementById("scanType").value;
+
+            let risk = 0;
+            let notes = [];
+
+            if (age > 60) { risk += 40; notes.push("Advanced age increases risk significantly."); }
+            if (brainInjury === "Yes") { risk += 20; notes.push("Brain injuries can accelerate neural degeneration."); }
+            if (familyHistory === "Yes") { risk += 20; notes.push("Family history suggests possible genetic linkage."); }
+            if (education === "Low") { risk += 10; notes.push("Low education correlates with reduced cognitive reserve."); }
+            if (isolation === "High") { risk += 15; notes.push("Social isolation correlates with cognitive decline."); }
+            if (lifestyle.includes("smoke") || lifestyle.includes("alcohol") || lifestyle.includes("inactive")) {
+                risk += 10; notes.push("Unhealthy lifestyle increases oxidative stress and neural vulnerability.");
+            }
+            if (neurodivergence !== "None" && neurodivergence !== "") {
+                risk += 5; notes.push("Some neurodivergent conditions alter neural resilience.");
+            }
+            if (illnesses.includes("diabetes") || illnesses.includes("hypertension") || illnesses.includes("obesity")) {
+                risk += 10; notes.push("Metabolic illnesses increase risk through vascular damage.");
+            }
+
+            risk = Math.min(100, risk);
+
+            let resultText = `<h3>Estimated Neurodegenerative Disease Risk: ${risk}%</h3>`;
+            resultText += `<p><strong>Selected Scan Type:</strong> ${scanType || "None selected"}</p>`;
+            resultText += "<ul>";
+            notes.forEach(n => resultText += `<li>${n}</li>`);
+            resultText += "</ul>";
+
+            // Suggest diseases & treatments
+            if (risk > 60) {
+                resultText += `<p><strong>Possible Conditions:</strong> Alzheimer’s, Parkinson’s, or Frontotemporal Dementia.</p>`;
+                resultText += `<p><strong>Suggested Actions:</strong> Schedule a neurological evaluation. Cognitive testing + MRI/fMRI for structural assessment. Consider neuroprotective medications (e.g., donepezil, memantine).</p>`;
+            } else if (risk > 30) {
+                resultText += `<p><strong>Possible Conditions:</strong> Mild Cognitive Impairment or early neurodegenerative changes.</p>`;
+                resultText += `<p><strong>Suggested Actions:</strong> Increase social activity, improve diet (Mediterranean style), engage in cognitive exercises.</p>`;
+            } else {
+                resultText += `<p><strong>Current Outlook:</strong> Low risk — maintain protective habits, regular exercise, and balanced nutrition.</p>`;
+            }
+
+            document.getElementById("result").innerHTML = resultText;
+        }
+    </script>
+
+</body>
+
+</html>

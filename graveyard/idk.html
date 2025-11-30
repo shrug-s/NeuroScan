@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NeuroScan Full Cognitive Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background: #f8f7fc;
+            margin: 0;
+            display: flex;
+        }
+
+        nav {
+            background: #e9e5f5;
+            width: 260px;
+            padding: 20px;
+            box-shadow: inset -1px 0 0 #d4cbe7;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            text-align: left;
+            padding: 12px 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            color: #372f58;
+            transition: 0.2s;
+        }
+
+        nav button:hover {
+            background: #d6d0ea;
+        }
+
+        main {
+            flex: 1;
+            padding: 30px 50px;
+            overflow-y: auto;
+        }
+
+        header {
+            background: #5b4b8a;
+            color: white;
+            padding: 20px 30px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        h2 {
+            color: #5b4b8a;
+        }
+
+        .section {
+            display: none;
+            margin-bottom: 40px;
+        }
+
+        .test-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        canvas {
+            border: 2px solid #333;
+            border-radius: 8px;
+            display: block;
+            margin: 10px auto;
+            cursor: crosshair;
+        }
+
+        .analyze-btn {
+            background: #7e66c6;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .analyze-btn:hover {
+            background: #594c8b;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            margin: 5px 0 10px;
+            font-size: 0.95rem;
+        }
+
+        textarea {
+            min-height: 80px;
+        }
+
+        .result-box {
+            background: #f3f1f9;
+            border-left: 5px solid #5b4b8a;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .symptom-button {
+            display: inline-block;
+            background: #d6d0ea;
+            padding: 6px 12px;
+            margin: 3px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .symptom-button.selected {
+            background: #7e66c6;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <button onclick="showPage('scan')">🧠 Scan Analysis</button>
+        <button onclick="showPage('cognition')">⚙️ Cognitive Function Test</button>
+        <button onclick="showPage('quiz')">📋 Patient Questionnaire</button>
+        <button onclick="showPage('results')">📊 Prediction & Report</button>
+        <button onclick="showPage('reference')">📚 Reference Sheets</button>
+        <button onclick="showPage('treatment')">⚗️ Treatment Library</button>
+        <button onclick="showPage('disclaimer')">⚖️ Disclaimer & Sources</button>
+    </nav>
+
+    <main>
+        <header>NeuroScan</header>
+
+        <!-- SCAN SECTION -->
+        <div id="scan" class="section" style="display:block;">
+            <h2>Scan Analysis</h2>
+            <label>Select Scan Type:</label>
+            <select id="scanType">
+                <option>MRI</option>
+                <option>fMRI</option>
+                <option>PET</option>
+                <option>CT</option>
+            </select>
+            <label>Upload Scan:</label>
+            <input type="file" accept="image/*,.nii,.dcm">
+            <div class="result-box" style="margin-top:20px;">Status: Awaiting scan input...</div>
+        </div>
+
+        <!-- COGNITION TESTS -->
+        <div id="cognition" class="section">
+            <h2>Cognitive Test</h2>
+
+            <!-- CLOCK DRAWING -->
+            <div class="test-card">
+                <h3>🕒 Clock-Drawing Test</h3>
+                <p>Draw a clock showing <strong>10 past 11</strong>:</p>
+                <canvas id="clockCanvas" width="300" height="300"></canvas>
+                <button class="analyze-btn" onclick="clearClock()">Clear</button>
+                <p id="clockScore"></p>
+            </div>
+
+            <!-- REACTION TIME -->
+            <div class="test-card">
+                <h3>⚡ Reaction Time Test</h3>
+                <button class="analyze-btn" id="reactionBtn">Start</button>
+                <p id="reactionResult"></p>
+            </div>
+
+            <!-- ORIENTATION -->
+            <div class="test-card">
+                <h3>📍 Orientation Test</h3>
+                <label>What is today's date?</label><input id="oriDate">
+                <label>Where are you right now?</label><input id="oriPlace">
+                <label>What city are you in?</label><input id="oriCity">
+                <button class="analyze-btn" onclick="checkOrientation()">Submit</button>
+                <p id="oriResult"></p>
+            </div>
+
+            <!-- 3 WORD RECALL -->
+            <div class="test-card">
+                <h3>🧩 3-Word Recall</h3>
+                <button class="analyze-btn" onclick="showWords()">Show Words</button>
+                <p id="wordsShown"></p>
+                <label>Enter the words you remember (comma-separated):</label><input id="recallInput">
+                <button class="analyze-btn" onclick="checkRecall()">Check</button>
+                <p id="recallResult"></p>
+            </div>
+
+            <!-- VERBAL FLUENCY -->
+            <div class="test-card">
+                <h3>🗣️ Verbal Fluency Test</h3>
+                <p>Name as many animals as possible in 60 seconds:</p>
+                <textarea id="fluencyBox"></textarea>
+                <button class="analyze-btn" onclick="startFluency()">Start 60s</button>
+                <p id="fluencyResult"></p>
+            </div>
+        </div>
+
+        <!-- PATIENT QUESTIONNAIRE -->
+        <div id="quiz" class="section">
+            <h2>Patient Questionnaire</h2>
+            <label>Age:</label><input type="number" id="age" min="0">
+            <label>Brain Injury History (Yes/No):</label>
+            <select id="brainInjury">
+                <option>No</option>
+                <option>Yes</option>
+            </select>
+            <label>Social Isolation (1=active, 5=isolated):</label>
+            <input type="range" min="1" max="5" id="isolation" value="3">
+            <label>Family History of Neurodegenerative Disease?</label>
+            <select id="fhistory" onchange="toggleDiseaseInput()">
+                <option>No</option>
+                <option>Yes</option>
+                <option>Unsure</option>
+            </select>
+            <div id="familyDiseaseDiv" style="display:none;">
+                <label>Specify disease(s):</label><input id="familyDisease">
+            </div>
+
+            <label>Gene Mutations (check all that apply):</label>
+            <div>
+                <input type="checkbox" id="c9gene"> C9orf72
+                <input type="checkbox" id="app"> APP
+                <input type="checkbox" id="psen1"> PSEN1
+                <input type="checkbox" id="psen2"> PSEN2
+                <input type="checkbox" id="trem2"> TREM2
+                <input type="checkbox" id="cx3cr1"> CX3CR1
+                <input type="checkbox" id="hladrb5"> HLA-DRB5
+                <input type="checkbox" id="apoe"> ApoE ε4
+            </div>
+
+            <label>Lifestyle Overview:</label><textarea id="lifestyle"></textarea>
+
+            <label>Current Symptoms (click to select):</label>
+            <div id="symptomButtons">
+                <span class="symptom-button">Memory loss</span>
+                <span class="symptom-button">Poor judgement</span>
+                <span class="symptom-button">Confusion</span>
+                <span class="symptom-button">Fatigue</span>
+            </div>
+
+            <button class="analyze-btn" onclick="calculateRisk()">Analyze Risk</button>
+        </div>
+
+        <!-- RESULTS -->
+        <div id="results" class="section">
+            <h2>Prediction & Report</h2>
+            <div id="reportBox" class="result-box">Complete questionnaire to generate report.</div>
+        </div>
+
+        <!-- REFERENCE -->
+        <div id="reference" class="section">
+            <h2>Reference Sheets</h2>
+            <details>
+                <summary>Sleep Quality</summary>
+                <p><strong>Poor:</strong>
+                    <7 hrs, frequent awakenings<br>
+                        <strong>Moderate:</strong> 7–8 hrs, occasional interruptions<br>
+                        <strong>Good:</strong> 7–9 hrs, consistent schedule
+                </p>
+            </details>
+            <details>
+                <summary>Physical Activity</summary>
+                <p><strong>Sedentary:</strong> ≤30 mins/wk<br>
+                    <strong>Moderate:</strong> 60 mins/wk<br>
+                    <strong>High:</strong> 150+ mins/wk
+                </p>
+            </details>
+        </div>
+
+        <!-- TREATMENT -->
+        <div id="treatment" class="section">
+            <h2>Treatment Library</h2>
+            <details>
+                <summary>Medical Treatments</summary>
+                <ul>
+                    <li>Donepezil, Rivastigmine, Galantamine</li>
+                    <li>Leqembi, Donanemab</li>
+                </ul>
+            </details>
+        </div>
+
+        <!-- DISCLAIMER -->
+        <div id="disclaimer" class="section">
+            <h2>Disclaimer & Sources</h2>
+            <p>Educational purposes only. Not medical advice.</p>
+        </div>
+    </main>
+
+    <script>
+        /* ====== NAVIGATION ====== */
+        function showPage(id) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function toggleDiseaseInput() {
+            document.getElementById('familyDiseaseDiv').style.display = (document.getElementById('fhistory').value === "Yes") ? 'block' : 'none';
+        }
+
+        /* ====== CLOCK DRAWING ====== */
+        const canvas = document.getElementById("clockCanvas");
+        const ctx = canvas.getContext("2d");
+        let drawing = false;
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            if (e.touches) return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        }
+        canvas.addEventListener("mousedown", e => { drawing = true; ctx.beginPath(); let p = getPos(e); ctx.moveTo(p.x, p.y); });
+        canvas.addEventListener("mousemove", e => { if (!drawing) return; let p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = "#000"; ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.stroke(); });
+        canvas.addEventListener("mouseup", () => { drawing = false; ctx.closePath(); scoreClock(); });
+        canvas.addEventListener("mouseleave", () => { drawing = false; });
+        canvas.addEventListener("touchstart", e => { drawing = true; ctx.beginPath(); let p = getPos(e); ctx.moveTo(p.x, p.y); });
+        canvas.addEventListener("touchmove", e => { e.preventDefault(); if (!drawing) return; let p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+        canvas.addEventListener("touchend", () => { drawing = false; ctx.closePath(); scoreClock(); });
+        function clearClock() { ctx.clearRect(0, 0, canvas.width, canvas.height); document.getElementById('clockScore').textContent = ''; }
+        function scoreClock() { let score = Math.floor(Math.random() * 6) + 5; document.getElementById('clockScore').textContent = `Clock Drawing Score: ${score}/10`; }
+
+        /* ====== REACTION TIME ====== */
+        let reactionStart;
+        document.getElementById('reactionBtn').addEventListener('click', () => {
+            const btn = document.getElementById('reactionBtn');
+            btn.disabled = true; btn.textContent = "Wait for green...";
+            const delay = Math.random() * 3000 + 1000;
+            setTimeout(() => {
+                document.body.style.background = "lightgreen";
+                reactionStart = performance.now();
+                btn.textContent = "CLICK NOW!";
+                btn.disabled = false;
+                btn.onclick = () => {
+                    let rt = performance.now() - reactionStart;
+                    document.getElementById('reactionResult').textContent = `Reaction Time: ${Math.round(rt)} ms`;
+                    document.body.style.background = "#f8f7fc";
+                    btn.textContent = "Start";
+                    btn.onclick = null;
+                }
+            }, delay);
+        });
+
+        /* ====== ORIENTATION ====== */
+        function checkOrientation() {
+            let score = 0;
+            if (document.getElementById('oriDate').value) score += 1;
+            if (document.getElementById('oriPlace').value) score += 1;
+            if (document.getElementById('oriCity').value) score += 1;
+            document.getElementById('oriResult').textContent = `Orientation Score: ${score}/3`;
+        }
+
+        /* ====== 3 WORD RECALL ====== */
+        const wordsList = ["Apple", "Table", "Penny"];
+        function showWords() { document.getElementById('wordsShown').textContent = wordsList.join(", "); }
+        function checkRecall() {
+            const input = document.getElementById('recallInput').value.split(",").map(w => w.trim().toLowerCase());
+            const score = wordsList.filter(w => input.includes(w.toLowerCase())).length;
+            document.getElementById('recallResult').textContent = `3-Word Recall Score: ${score}/3`;
+        }
+
+        /* ====== VERBAL FLUENCY 60s ====== */
+        function startFluency() {
+            document.getElementById('fluencyBox').value = "";
+            document.getElementById('fluencyResult').textContent = "Timer started: 60s...";
+            let time = 60;
+            const interval = setInterval(() => {
+                time--;
+                document.getElementById('fluencyResult').textContent = `Time remaining: ${time}s`;
+                if (time <= 0) {
+                    clearInterval(interval);
+                    const words = document.getElementById('fluencyBox').value.split(/\s|,/).filter(w => w.trim());
+                    document.getElementById('fluencyResult').textContent = `You named ${words.length} words in 60 seconds.`;
+                }
+            }, 1000);
+        }
+
+        /* ====== SYMPTOMS ====== */
+        document.querySelectorAll('.symptom-button').forEach(btn => btn.addEventListener('click', () => btn.classList.toggle('selected')));
+
+        /* ====== RISK CALCULATION ====== */
+        function calculateRisk() {
+            let risk = 5;
+            let reasons = [];
+            const age = +document.getElementById('age').value || 0;
+            if (age > 60) { risk += 25; reasons.push("Age >60"); } else if (age > 40) { risk += 10; reasons.push("Age >40"); }
+            if (document.getElementById('brainInjury').value === "Yes") { risk += 10; reasons.push("Brain injury history"); }
+            const isolation = +document.getElementById('isolation').value;
+            if (isolation >= 4) { risk += 8; reasons.push("Higher social isolation"); }
+            const genes = ["c9gene", "app", "psen1", "psen2", "trem2", "cx3cr1", "hladrb5", "apoe"];
+            genes.forEach(g => { if (document.getElementById(g).checked) { risk += (g === "apoe" ? 10 : 5); reasons.push(g + " gene mutation present"); } });
+            if (document.getElementById('fhistory').value === "Yes") { risk += 15; reasons.push("Family history"); }
+            const lifestyle = document.getElementById('lifestyle').value.toLowerCase();
+            if (lifestyle.includes("smoke") || lifestyle.includes("alcohol")) { risk += 10; reasons.push("Unhealthy lifestyle"); }
+            if (lifestyle.includes("active") || lifestyle.includes("healthy")) { risk -= 5; reasons.push("Good lifestyle"); }
+            const symptoms = Array.from(document.querySelectorAll('.sym

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroScanAI — Clinical Research Edition</title>
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f8f7fc;
+            color: #1f1f1f;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        header {
+            background: #5b4b8a;
+            color: white;
+            padding: 20px 30px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        nav {
+            background: #e9e5f5;
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: inset -1px 0 0 #d4cbe7;
+            overflow-y: auto;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            text-align: left;
+            padding: 12px 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            color: #372f58;
+            transition: background 0.2s;
+        }
+
+        nav button:hover {
+            background: #d6d0ea;
+        }
+
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 50px;
+        }
+
+        h2 {
+            color: #4b3b75;
+        }
+
+        .section {
+            display: none;
+            margin-bottom: 40px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .analyze-btn {
+            background: #6a5ca4;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .analyze-btn:hover {
+            background: #594c8b;
+        }
+
+        .result-box {
+            background: #f3f1f9;
+            border-left: 5px solid #6a5ca4;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        details {
+            background: #f7f5fb;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 10px;
+            padding: 10px 15px;
+        }
+
+        details summary {
+            font-weight: 600;
+            cursor: pointer;
+            color: #4b3b75;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <button onclick="showPage('scan')">🧠 Scan Analysis</button>
+        <button onclick="showPage('quiz')">📋 Patient Questionnaire</button>
+        <button onclick="showPage('results')">📊 Prediction & Report</button>
+        <button onclick="showPage('reference')">📚 Reference Sheets</button>
+        <button onclick="showPage('treatment')">⚗️ Treatment Library</button>
+        <button onclick="showPage('disclaimer')">⚖️ Disclaimer & Sources</button>
+    </nav>
+    <main>
+        <header>NeuroScanAI — Clinical Research Edition</header>
+
+        <!-- SCAN -->
+        <div id="scan" class="section" style="display:block;">
+            <h2>Scan Analysis</h2>
+            <label>Select Scan Type:</label>
+            <select id="scanType">
+                <option>MRI</option>
+                <option>fMRI</option>
+                <option>PET</option>
+                <option>CT</option>
+            </select>
+            <label>Upload Scan:</label>
+            <input type="file" accept="image/*,.nii,.dcm">
+            <div class="result-box" style="margin-top:20px;">
+                <strong>Status:</strong> Awaiting scan input...
+            </div>
+        </div>
+
+        <!-- COGNITIVE TESTS -->
+        <div id="cogtest" class="section">
+            <h2>Cognitive Test</h2>
+
+            <!-- CLOCK TEST -->
+            <div class="test-card">
+                <h3>🕒 Clock-Drawing Test</h3>
+                <p>Draw a clock showing **10 past 11**:</p>
+                <canvas id="clockCanvas" width="300" height="300"></canvas>
+                <button class="analyze-btn" onclick="clearClock()">Clear</button>
+            </div>
+
+            <!-- REACTION TIME -->
+            <div class="test-card">
+                <h3>⚡ Reaction Time Test</h3>
+                <button id="reactionBtn" class="analyze-btn" onclick="startReaction()">Start</button>
+                <p id="reactionResult"></p>
+            </div>
+
+            <!-- ORIENTATION -->
+            <div class="test-card">
+                <h3>📍 Orientation Test</h3>
+                <label>What is today's date?</label>
+                <input id="oriDate">
+                <label>Where are you right now?</label>
+                <input id="oriPlace">
+                <label>What city are you in?</label>
+                <input id="oriCity">
+                <button class="analyze-btn" onclick="checkOrientation()">Submit</button>
+                <p id="oriResult"></p>
+            </div>
+
+            <!-- 3 WORD RECALL -->
+            <div class="test-card">
+                <h3>🧩 3-Word Recall</h3>
+                <button class="analyze-btn" onclick="showWords()">Show Words</button>
+                <p id="wordsShown"></p>
+                <label>Enter the words you remember:</label>
+                <input id="recallInput">
+                <button class="analyze-btn" onclick="checkRecall()">Check</button>
+                <p id="recallResult"></p>
+            </div>
+
+            <!-- VERBAL FLUENCY -->
+            <div class="test-card">
+                <h3>🗣️ Verbal Fluency Test (Animal Naming)</h3>
+                <p>Name as many animals as possible in 60 seconds:</p>
+                <textarea id="fluencyBox"></textarea>
+                <button class="analyze-btn" onclick="checkFluency()">Submit</button>
+                <p id="fluencyResult"></p>
+            </div>
+        </div>
+
+
+        <!-- QUESTIONNAIRE -->
+        <div id="quiz" class="section">
+            <h2>Patient Questionnaire</h2>
+            <label>Age:</label><input type="number" id="age">
+            <label>Gender:</label><select id="gender">
+                <option>Female</option>
+                <option>Male</option>
+                <option>Other</option>
+            </select>
+            <label>Education Level:</label><select id="education">
+                <option>Primary</option>
+                <option>Secondary</option>
+                <option>Higher</option>
+                <option>Postgraduate</option>
+            </select>
+            <label>Brain Injury History:</label><select id="brainInjury">
+                <option>No</option>
+                <option>Yes</option>
+            </select>
+            <label>Social Isolation (1=low, 5=high):</label><input type="range" min="1" max="5" id="isolation"
+                value="3">
+
+            <label>Family History:</label><select id="fhistory" onchange="toggleDiseaseInput()">
+                <option>No</option>
+                <option>Yes</option>
+                <option>Unsure</option>
+            </select>
+            <div id="familyDiseaseDiv" style="display:none;"><label>Specify disease(s):</label><input id="familyDisease"
+                    placeholder="e.g., Alzheimer’s, Parkinson’s"></div>
+
+            <label>Neurodivergent Conditions:</label><input id="neurodiv" placeholder="e.g., ADHD, Autism">
+            <label>Health Conditions:</label><input id="healthCond"
+                placeholder="e.g., Diabetes, Hypertension, Depression">
+            <label>Lifestyle Overview:</label><textarea id="lifestyle"
+                placeholder="Describe sleep, diet, exercise, habits..."></textarea>
+            <label>Genetic Risk Factors:</label>
+            <input type="checkbox" id="c9gene"> <label for="c9gene">C9orf72 gene present</label><br>
+            <input type="checkbox" id="apoe"> <label for="apoe">ApoE ε4 gene present</label>
+            <label>Current Symptoms:</label><textarea id="symptoms"
+                placeholder="List memory loss, tremors, confusion, etc."></textarea>
+
+            <button class="analyze-btn" onclick="calculateRisk()">Analyze Risk</button>
+        </div>
+
+        <!-- REPORT -->
+        <div id="results" class="section">
+            <h2>Prediction & Report</h2>
+            <div id="reportBox" class="result-box">
+                Complete questionnaire to generate report.
+            </div>
+        </div>
+
+        <!-- REFERENCES -->
+        <div id="reference" class="section">
+            <h2>Reference Sheets</h2>
+            <details>
+                <summary>Sleep Quality</summary>
+                <p>7–9 hours per night, consistent schedule, dark quiet room, limited screen time before bed.</p>
+            </details>
+            <details>
+                <summary>Physical Activity</summary>
+                <p>At least 150 minutes of moderate aerobic activity weekly, plus strength exercises twice a week.</p>
+            </details>
+            <details>
+                <summary>Diet</summary>
+                <p>Mediterranean diet rich in vegetables, omega-3, whole grains; reduce processed sugars and alcohol.
+                </p>
+            </details>
+            <details>
+                <summary>Social Engagement</summary>
+                <p>Regular interaction with friends/family or community reduces ND risk by supporting neuroplasticity.
+                </p>
+            </details>
+            <details>
+                <summary>Protein Pathology Summary</summary>
+                <ul>
+                    <li><b>Tau:</b> Alzheimer’s, FTD</li>
+                    <li><b>β-Amyloid:</b> Alzheimer’s plaques</li>
+                    <li><b>α-Synuclein:</b> Parkinson’s, Lewy Body</li>
+                    <li><b>TDP-43:</b> FTD, ALS</li>
+                    <li><b>Prions:</b> CJD (Prion disease)</li>
+                </ul>
+            </details>
+        </div>
+
+        <!-- TREATMENT LIBRARY -->
+        <div id="treatment" class="section">
+            <h2>Treatment Library</h2>
+            <details>
+                <summary>Pharmacological</summary>
+                <ul>
+                    <li><b>Cholinesterase inhibitors:</b> Donepezil (Aricept), Rivastigmine (Exelon), Galantamine
+                        (Razadyne).</li>
+                    <li><b>Glutamate regulators:</b> Memantine (Namenda).</li>
+                    <li><b>Amyloid-targeting:</b> Lecanemab (Leqembi), Donanemab (Kisunla).</li>
+                    <li><b>Behavioral meds:</b> Suvorexant (Belsomra), Brexpiprazole (Rexulti).</li>
+                </ul>
+            </details>
+            <details>
+                <summary>Non-Pharmacological</summary>
+                <ul>
+                    <li>Physical therapy, speech therapy, occupational therapy.</li>
+                    <li>Social engagement programs.</li>
+                    <li>Cognitive stimulation and memory exercises.</li>
+                    <li>Sleep hygiene and stress management.</li>
+                </ul>
+            </details>
+            <details>
+                <summary>Assistive & Palliative</summary>
+                <p>For late-stage ND: focus on comfort, communication aids, caregiver support, hospice involvement.</p>
+            </details>
+        </div>
+
+        <!-- DISCLAIMER -->
+        <div id="disclaimer" class="section">
+            <h2>Disclaimer & Sources</h2>
+            <p>This tool is for educational and research demonstration only. It does not replace medical advice,
+                diagnosis, or treatment by qualified clinicians.</p>
+            <h3>Sources</h3>
+            <ul>
+                <li>World Health Organization (2023). <i>Neurological Disorders: Public Health Challenges.</i></li>
+                <li>NIH Alzheimer’s & Dementia Research Center Publications.</li>
+                <li>“Principles of Neural Science” – Kandel et al., 6th Edition.</li>
+                <li>National Institute on Aging: Alzheimer’s Treatments and Research.</li>
+            </ul>
+        </div>
+    </main>
+
+    <script>
+        function showPage(id) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+        }
+        function toggleDiseaseInput() {
+            const show = document.getElementById("fhistory").value === "Yes";
+            document.getElementById("familyDiseaseDiv").style.display = show ? "block" : "none";
+        }
+        function calculateRisk() {
+            let risk = 5, reasons = [];
+            const age = +document.getElementById("age").value || 0;
+            if (age > 60) { risk += 25; reasons.push("Older age increases ND risk."); }
+            else if (age > 40) risk += 10;
+            if (document.getElementById("brainInjury").value === "Yes") { risk += 10; reasons.push("History of brain injury."); }
+            if (+document.getElementById("isolation").value >= 4) { risk += 8; reasons.push("High social isolation level."); }
+            if (document.getElementById("c9gene").checked) { risk += 12; reasons.push("C9orf72 gene detected."); }
+            if (document.getElementById("apoe").checked) { risk += 10; reasons.push("ApoE ε4 gene present; elevated ARIA risk."); }
+            if (document.getElementById("fhistory").value === "Yes") { risk += 15; reasons.push("Family ND history."); }
+            const lifestyle = document.getElementById("lifestyle").value.toLowerCase();
+            if (lifestyle.includes("smoke") || lifestyle.includes("alcohol")) { risk += 10; reasons.push("Lifestyle habits increase risk."); }
+            if (lifestyle.includes("healthy") || lifestyle.includes("exercise")) risk -= 5;
+            const cond = document.getElementById("healthCond").value.toLowerCase();
+            if (cond.includes("diabetes") || cond.includes("depression")) { risk += 8; reasons.push("Existing chronic/mental condition."); }
+            risk = Math.min(100, Math.max(0, risk));
+            const cat = risk > 70 ? "High" : risk > 40 ? "Moderate" : "Low";
+            const alz = (risk * 0.4).toFixed(1), park = (risk * 0.25).toFixed(1), als = (risk * 0.15).toFixed(1), ftd = (risk * 0.1).toFixed(1), lewy = (risk * 0.1).toFixed(1);
+            document.getElementById("reportBox").innerHTML = `
+  <strong>Overall ND Risk:</strong> ${risk}% (${cat})<br><br>
+  <b>Disease Breakdown:</b>
+  <ul><li>Alzheimer’s: ${alz}%</li><li>Parkinson’s: ${park}%</li><li>ALS: ${als}%</li><li>FTD: ${ftd}%</li><li>Lewy Body: ${lewy}%</li></ul>
+  <b>Risk Factors:</b><ul>${reasons.map(r => `<li>${r}</li>`).join('')}</ul>
+  <b>Next Steps:</b><ul><li>Cognitive tests: MMSE, MoCA recommended.</li><li>Early screening & neurologist referral advised for Moderate-High risk.</li></ul>`;
+            showPage("results");
+        }
+    </script>
+</body>
+
+</html>

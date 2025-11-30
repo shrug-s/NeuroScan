@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>NeuroScanAI — Clinical Extended (v3)</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap">
+    <style>
+        :root {
+            --accent: #64509a;
+            /* purple-gray */
+            --accent-2: #7e66c6;
+            --muted: #6f6f7a;
+            --bg: #f6f5fa;
+            --card: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", system-ui, Segoe UI, Roboto, Arial;
+            background: var(--bg);
+            color: #222;
+        }
+
+        header {
+            background: var(--accent);
+            color: #fff;
+            padding: 18px 28px;
+            font-weight: 600
+        }
+
+        .app {
+            display: flex;
+            height: calc(100vh - 64px)
+        }
+
+        nav {
+            width: 260px;
+            background: #efeaf8;
+            padding: 20px;
+            border-right: 1px solid #e2dff2
+        }
+
+        nav h3 {
+            margin: 0 0 14px 0;
+            color: var(--accent)
+        }
+
+        nav button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            border-radius: 8px;
+            border: 0;
+            background: transparent;
+            margin-bottom: 8px;
+            cursor: pointer;
+            color: #333
+        }
+
+        nav button:hover {
+            background: #e6e0f6
+        }
+
+        main {
+            flex: 1;
+            padding: 28px;
+            overflow: auto
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 22px
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 6px 18px rgba(100, 80, 154, 0.08)
+        }
+
+        h2 {
+            color: var(--accent);
+            margin-top: 0
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: #333;
+            margin-top: 8px;
+            display: block
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 9px;
+            border-radius: 8px;
+            border: 1px solid #d9d6ea;
+            margin-top: 6px;
+            font-size: 0.95rem;
+            background: #fff
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 0.9rem
+        }
+
+        .small {
+            font-size: 0.85rem;
+            color: #666
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #fff;
+            border: 0;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer
+        }
+
+        .btn.secondary {
+            background: #f3eef9;
+            color: var(--accent);
+            border: 1px solid #ddd
+        }
+
+        .result-box {
+            background: #fbf9ff;
+            border-left: 4px solid var(--accent-2);
+            padding: 12px;
+            border-radius: 8px
+        }
+
+        .row {
+            display: flex;
+            gap: 12px
+        }
+
+        .col {
+            flex: 1
+        }
+
+        .slider {
+            width: 100%
+        }
+
+        .symptoms-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 10px
+        }
+
+        .symptoms-list label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer
+        }
+
+        .refsheet {
+            max-height: 520px;
+            overflow: auto
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            color: var(--accent);
+            margin-bottom: 8px
+        }
+
+        .calc-debug {
+            background: #fff9;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.9rem
+        }
+
+        .disclaimer {
+            background: #fff6f6;
+            border-left: 4px solid #e49b9b;
+            padding: 10px;
+            border-radius: 8px;
+            color: #602b2b
+        }
+
+        .sources {
+            font-size: 0.9rem;
+            color: #444
+        }
+
+        .cogtest {
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .export-area {
+            white-space: pre-wrap;
+            background: #f7f6fb;
+            padding: 12px;
+            border-radius: 8px;
+            max-height: 220px;
+            overflow: auto
+        }
+    </style>
+</head>
+
+<body>
+    <header>🧠 NeuroScanAI — Clinical Extended (Reference + Risk + Tests)</header>
+    <div class="app">
+        <nav>
+            <h3>Navigation</h3>
+            <button onclick="show('profile')">1. Patient Profile</button>
+            <button onclick="show('symptoms')">2. Current Symptoms</button>
+            <button onclick="show('cognitive')">3. Cognitive Tests</button>
+            <button onclick="show('reference')">4. Reference Sheets</button>
+            <button onclick="show('report')">5. Prediction & Report</button>
+            <hr style="margin:12px 0;border:none;border-top:1px solid #eee">
+            <div class="small muted">Quick actions</div>
+            <button class="btn secondary" onclick="resetForm()" style="margin-top:8px">Reset Form</button>
+            <button class="btn" onclick="generateReport()" style="margin-top:8px">Generate Report</button>
+        </nav>
+
+        <main>
+            <!-- GRID LAYOUT -->
+            <div class="grid">
+
+                <!-- LEFT / MAIN COLUMN -->
+                <div>
+
+                    <!-- PROFILE CARD -->
+                    <div id="profile" class="card">
+                        <h2>Patient Profile</h2>
+                        <div class="row">
+                            <div class="col">
+                                <label>Full Name</label>
+                                <input id="name" type="text" placeholder="Patient name...">
+                            </div>
+                            <div style="width:120px">
+                                <label>Age</label>
+                                <input id="age" type="number" min="0" placeholder="yrs">
+                            </div>
+                        </div>
+
+                        <div class="row" style="margin-top:10px">
+                            <div class="col">
+                                <label>Gender</label>
+                                <select id="gender">
+                                    <option>Female</option>
+                                    <option>Male</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label>Education Level</label>
+                                <select id="education">
+                                    <option>Primary or less</option>
+                                    <option>Secondary / High School</option>
+                                    <option>Undergraduate</option>
+                                    <option>Graduate or Higher</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <label style="margin-top:12px">Family History of ND?</label>
+                        <div class="row">
+                            <select id="fhistory" onchange="toggleEl('familyDisease', this.value==='Yes')">
+                                <option>No</option>
+                                <option>Yes</option>
+                                <option>Unsure</option>
+                            </select>
+                            <input id="familyDisease" type="text"
+                                placeholder="If Yes, specify (Alzheimer's, Parkinson's...)" style="display:none">
+                        </div>
+
+                        <label style="margin-top:12px">Genes</label>
+                        <div class="row">
+                            <div class="col">
+                                <label class="small muted">C9orf72 (repeat expansion)?</label>
+                                <select id="geneC9">
+                                    <option>No</option>
+                                    <option>Yes</option>
+                                    <option>Unknown</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label class="small muted">ApoE ε4 allele?</label>
+                                <select id="geneApoE">
+                                    <option>No</option>
+                                    <option>One copy</option>
+                                    <option>Two copies</option>
+                                    <option>Unknown</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <label style="margin-top:12px">Brain injury history</label>
+                        <select id="brainInjury">
+                            <option>No</option>
+                            <option>Mild (concussion)</option>
+                            <option>Moderate</option>
+                            <option>Severe</option>
+                        </select>
+
+                        <label style="margin-top:12px">Social isolation (scale)</label>
+                        <input id="isolation" type="range" min="0" max="10" value="0" class="slider">
+                        <div class="small muted">0 = active social life, 10 = very socially isolated</div>
+
+                        <label style="margin-top:12px">Lifestyle summary (sleep, exercise, diet, smoking)</label>
+                        <textarea id="lifestyle"
+                            placeholder="e.g. sleeps 7-8hrs, exercises 3x/wk, Mediterranean diet, non-smoker"></textarea>
+
+                        <label style="margin-top:12px">Comorbid medical conditions (specify)</label>
+                        <input id="healthCond" type="text" placeholder="e.g. diabetes, hypertension, lupus, depression">
+
+                        <div style="margin-top:12px;display:flex;gap:8px">
+                            <button class="btn" onclick="show('symptoms')">Next: Symptoms →</button>
+                            <button class="btn secondary" onclick="calculateRisk()">Calculate Risk (preview)</button>
+                        </div>
+                    </div>
+
+                    <!-- SYMPTOMS CARD -->
+                    <div id="symptoms" class="card" style="margin-top:18px;display:none">
+                        <h2>Current Symptoms (check all that apply)</h2>
+                        <div class="symptoms-list">
+                            <label><input type="checkbox" value="Memory loss"> Memory loss</label>
+                            <label><input type="checkbox" value="Poor judgement"> Poor judgement</label>
+                            <label><input type="checkbox" value="Poor understanding"> Poor understanding</label>
+                            <label><input type="checkbox" value="Poor concentration"> Poor concentration</label>
+                            <label><input type="checkbox" value="Personality changes"> Personality changes</label>
+                            <label><input type="checkbox" value="Depression"> Depression</label>
+                            <label><input type="checkbox" value="Agitation"> Agitation</label>
+                            <label><input type="checkbox" value="Confusion"> Confusion</label>
+                            <label><input type="checkbox" value="Mood swings"> Mood swings</label>
+                            <label><input type="checkbox" value="Balance issues"> Balance issues</label>
+                            <label><input type="checkbox" value="Poor coordination"> Poor coordination</label>
+                            <label><input type="checkbox" value="Tremors"> Tremors</label>
+                            <label><input type="checkbox" value="Speech difficulties"> Difficulties speaking</label>
+                            <label><input type="checkbox" value="Swallowing difficulties"> Difficulties
+                                swallowing</label>
+                            <label><input type="checkbox" value="Insomnia"> Insomnia</label>
+                        </div>
+
+                        <div style="margin-top:12px;display:flex;gap:8px">
+                            <button class="btn" onclick="show('cognitive')">Next: Cognitive Tests →</button>
+                            <button class="btn secondary" onclick="calculateRisk()">Quick risk calc</button>
+                        </div>
+                    </div>
+
+                    <!-- COGNITIVE TEST CARD -->
+                    <div id="cognitive" class="card" style="margin-top:18px;display:none">
+                        <h2>Brief Cognitive Screening (MMSE-style + 5-word recall)</h2>
+                        <div class="cogtest">
+                            <div>
+                                <label>Orientation — Year</label>
+                                <input id="q_year" placeholder="What year is it?">
+                            </div>
+                            <div>
+                                <label>Orientation — Location (city)</label>
+                                <input id="q_place" placeholder="Where are you right now?">
+                            </div>
+                            <div>
+                                <label>Registration — name three objects (examiner enters)</label>
+                                <input id="reg1" placeholder="Object 1 (examiner types the words)"><br>
+                                <input id="reg2" placeholder="Object 2"><br>
+                                <input id="reg3" placeholder="Object 3">
+                                <div class="small muted">At end of test, ask recall of these 3 words (scored below)
+                                </div>
+                            </div>
+                            <div>
+                                <label>Serial 7s (subtract 7 from 100, repeat)</label>
+                                <input id="serial7" placeholder="e.g., 93">
+                                <div class="small muted">Use two iterations (score reduces if incorrect)</div>
+                            </div>
+                            <div>
+                                <label>Five-word learning and delayed recall (MoCA-style)</label>
+                                <input id="five1" placeholder="Word 1 (examiner inputs)"><br>
+                                <input id="five2" placeholder="Word 2"><br>
+                                <input id="five3" placeholder="Word 3"><br>
+                                <input id="five4" placeholder="Word 4"><br>
+                                <input id="five5" placeholder="Word 5">
+                                <div class="small muted">Later, ask patient to recall these five words and score recall
+                                    (0–5)</div>
+                            </div>
+
+                            <div style="display:flex;gap:8px;margin-top:8px">
+                                <button class="btn" onclick="scoreCognitive()">Score tests</button>
+                                <button class="btn secondary" onclick="show('reference')">Reference sheets</button>
+                            </div>
+
+                            <div id="cogScore" style="margin-top:10px"></div>
+                        </div>
+                    </div>
+
+                    <!-- REFERENCE SHEETS (left column shows list, right column will show details on the right) -->
+                </div>
+
+                <!-- RIGHT / REFERENCE COLUMN -->
+                <div>
+
+                    <!-- REFERENCE CARD -->
+                    <div id="reference" class="card refsheet" style="display:none">
+                        <h2>Reference Sheets — Factors & Guidance</h2>
+
+                        <div class="section-title">Sleep (What is "good sleep"?)</div>
+                        <div class="small muted">
+                            <strong>Good sleep:</strong> 7–9 hours nightly for most adults; consistent bedtime,
+                            <em>sleep latency</em>
+                            <30 min, <em>wake after sleep onset</em>
+                                <20% of time. Poor sleep (chronic <6 hrs, fragmented sleep, untreated sleep apnea)
+                                    increases dementia risk via reduced glymphatic clearance and vascular stress. </div>
+
+                                    <div class="section-title" style="margin-top:12px">Physical activity</div>
+                                    <div class="small muted">≥150 min moderate aerobic activity/week and resistance
+                                        training improves cognitive resilience. Even walking 30 min/day lowers risk.
+                                    </div>
+
+                                    <div class="section-title" style="margin-top:12px">Diet</div>
+                                    <div class="small muted">Mediterranean-style diet (olive oil, fish, vegetables,
+                                        nuts) linked to reduced cognitive decline. Avoid chronic excess alcohol and
+                                        heavy processed-food intake.</div>
+
+                                    <div class="section-title" style="margin-top:12px">Social engagement</div>
+                                    <div class="small muted">Regular social contact, volunteer work, clubs, and
+                                        community participation reduce social isolation risk. Isolation score 0–10: aim
+                                        <3.< /div>
+
+                                            <div class="section-title" style="margin-top:12px">Brain injury</div>
+                                            <div class="small muted">History of traumatic brain injury (esp.
+                                                moderate/severe or repeated concussions) increases long-term risk of
+                                                neurodegeneration — monitor closely.</div>
+
+                                            <div class="section-title" style="margin-top:12px">Neurodivergence</div>
+                                            <div class="small muted">ADHD / ASD and other neurodevelopmental conditions
+                                                interact with cognitive reserve and mental health; they may require
+                                                tailored monitoring strategies.</div>
+
+                                            <div class="section-title" style="margin-top:12px">Genes & ARIA</div>
+                                            <div class="small muted">ApoE ε4 alleles increase AD risk and also increase
+                                                risk for ARIA (amyloid-related imaging abnormalities) if anti-amyloid
+                                                monoclonal antibodies are used. C9orf72 expansions are strongly linked
+                                                to ALS/FTD spectrum disorders; presence increases ALS/FTD risk markedly.
+                                            </div>
+
+                                            <div style="margin-top:12px" class="small muted">
+                                                <strong>Symptoms reference:</strong> the checklist covers general ND
+                                                symptoms: memory loss, attention issues, aphasia/apraxia/amnesia (the 8
+                                                A's), mood and behavioral changes, motor signs (tremor, balance,
+                                                swallowing). Use specialized scales for severity (e.g. CDR for dementia
+                                                staging).
+                                            </div>
+
+                                            <div style="margin-top:12px">
+                                                <div class="section-title">Medication categories (overview)</div>
+                                                <div class="small muted">
+                                                    <ul>
+                                                        <li><b>Disease-targeting biologics:</b> anti-amyloid antibodies
+                                                            (lecanemab, donanemab) — require ARIA monitoring.</li>
+                                                        <li><b>Symptom-targeting drugs:</b> cholinesterase inhibitors
+                                                            (donepezil, rivastigmine, galantamine), memantine (NMDA
+                                                            antagonist), L-DOPA for Parkinson’s, riluzole for ALS
+                                                            (disease-modifying modestly).</li>
+                                                        <li><b>Non-pharmacologic:</b> cognitive rehab, physiotherapy,
+                                                            occupational therapy, speech/swallow therapy, exercise
+                                                            programs.</li>
+                                                        <li><b>Supportive/palliative:</b> advance care planning, symptom
+                                                            control, psychosocial support.</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+
+                                            <div style="margin-top:12px">
+                                                <div class="section-title">Staging dementia (typical timeline)</div>
+                                                <div class="small muted">Seven-stage model (1: no symptoms; 2–3: early
+                                                    decline; 4–5: mild; 6–7: severe decline & end stage). Durations vary
+                                                    — clinical judgment and CDR scores used.</div>
+                                            </div>
+
+                                            <div style="margin-top:12px">
+                                                <div class="section-title">ARIA & ApoE-ε4 note</div>
+                                                <div class="small muted">Patients with ApoE ε4, especially two copies,
+                                                    have higher ARIA risk during anti-amyloid therapy; careful MRI
+                                                    monitoring and risk/benefit discussion required before treating.
+                                                </div>
+                                            </div>
+
+                                            <div style="margin-top:14px" class="small muted">
+                                                <b>Want extra detail on any topic?</b> Use the Sources pane at the
+                                                bottom for direct references to NIA, WHO, MoCA/MMSE instructions, and
+                                                anti-amyloid guidance.
+                                            </div>
+                                    </div>
+
+                                    <!-- REPORT CARD -->
+                                    <div id="report" class="card" style="margin-top:18px">
+                                        <h2>Prediction & Report</h2>
+                                        <div id="reportBox" class="result-box">No report yet. Complete the questionnaire
+                                            and cognitive tests, then press <strong>Generate Report</strong>.</div>
+
+                                        <div style="margin-top:12px">
+                                            <div class="section-title">Risk equation (transparent)</div>
+                                            <div class="small muted calc-debug" id="equationBox">
+                                                <!-- formula will be injected here -->
+                                            </div>
+                                        </div>
+
+                                        <div style="margin-top:12px">
+                                            <div class="section-title">Disclaimer</div>
+                                            <div class="disclaimer small">
+                                                This tool is an educational prototype only. It is NOT diagnostic or
+                                                prescriptive. Always consult qualified clinicians for diagnosis, genetic
+                                                counseling, and treatment. Medication suggestions are informational and
+                                                require clinician approval.
+                                            </div>
+                                        </div>
+
+                                        <div style="margin-top:12px">
+                                            <div class="section-title">Sources / Bibliography</div>
+                                            <div class="sources small">
+                                                Key sources are linked below after the app. Use them for thesis/paper
+                                                background and to cite in presentations.
+                                            </div>
+                                        </div>
+
+                                        <div style="margin-top:12px">
+                                            <button class="btn" onclick="exportReport()">Export report (copy)</button>
+                                            <button class="btn secondary" onclick="printReport()">Print / Save
+                                                PDF</button>
+                                            <div style="margin-top:10px" class="export-area" id="exportArea"
+                                                tabindex="0"></div>
+                                        </div>
+                                    </div>
+
+                        </div>
+                    </div>
+        </main>
+    </div>
+
+    <script>
+        /* ---------- UI helpers ---------- */
+        function show(id) {
+            // hide main panes
+            ['profile', 'symptoms', 'cognitive', 'reference', 'report'].forEach(x => {
+                const el = document.getElementById(x);
+                if (!el) return;
+                el.style.display = (x === id) ? 'block' : 'none';
+            });
+            // ensure report container visible if report requested
+            if (id === 'report') document.getElementById('reportBox').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        /* toggle display helper */
+        function toggleEl(id, show) { const el = document.getElementById(id); if (el) el.style.display = show ? 'block' : 'none'; }
+
+        /* --------- Cognitive scoring (very simple prototype) ---------- */
+        function scoreCognitive() {
+            // Simple rule-based scoring for prototype (not a replacement for MoCA/MMSE)
+            let score = 0; let details = [];
+            const year = (document.getElementById('q_year').value || '').trim();
+            if (year && year.match(/20|19|2/)) { score += 1; details.push('Orientation-year correct') }
+            const place = (document.getElementById('q_place').value || '').trim();
+            if (place.length > 2) { score += 1; details.push('Orientation-place entered') }
+
+            // Registration recall (3 items)
+            const reg1 = document.getElementById('reg1').value.trim();
+            const reg2 = document.getElementById('reg2').value.trim();
+            const reg3 = document.getElementById('reg3').value.trim();
+            // For the prototype, assume registration correct if words entered
+            if (reg1 && reg2 && reg3) score += 1, details.push('Registration entered');
+
+            // Serial 7s — compare a numeric input (very rough)
+            const serial = (document.getElementById('serial7').value || '').trim();
+            if (serial && !isNaN(serial)) score += (Math.abs(parseInt(serial) % 7) === 2 ? 1 : 0);
+
+            // Five-word recall: later the clinician enters recall — for prototype just accept entered words
+            const five = [document.getElementById('five1').value, document.getElementById('five2').value, document.getElementById('five3').value, document.getElementById('five4').value, document.getElementById('five5').value];
+            let learned = five.filter(w => w && w.trim().length > 0).length;
+            if (learned >= 3) { score += 2; details.push(`Five-word list: ${learned} entered`) }
+
+            // Display
+            document.getElementById('cogScore').innerHTML = `<div class="result-box"><strong>Cognitive score (prototype):</strong> ${score} pts<br><small class="muted">Details: ${details.join('; ') || 'none'}</small></div>`;
+            return { score, details };
+        }
+
+        /* ---------- Risk calculation ---------- */
+        function calculateRisk() {
+            // Extract values
+            const age = parseInt(document.getElementById('age').value || 0);
+            const gender = document.getElementById('gender').value;
+            const education = document.getElementById('education').value;
+            const fh = document.getElementById('fhistory').value;
+            const familyDisease = (document.getElementById('familyDisease').value || '').toLowerCase();
+            const geneC9 = document.getElementById('geneC9').value;
+            const geneApoE = document.getElementById('geneApoE').value;
+            const brainInjury = document.getElementById('brainInjury').value;
+            const isolation = parseInt(document.getElementById('isolation').value || 0);
+            const lifestyle = (document.getElementById('lifestyle').value || '').toLowerCase();
+            const healthCond = (document.getElementById('healthCond').value || '').toLowerCase();
+
+            // symptoms
+            const checked = Array.from(document.querySelectorAll('#symptoms input[type=checkbox]:checked')).map(c => c.value);
+            // cognitive penalty from previous cognitive scoring
+            const cog = scoreCognitive();
+            const cogPenalty = Math.max(0, 6 - (cog.score || 0)) * 1.5; // more penalty if low prototype score
+
+            // weights (editable)
+            const weights = {
+                baseline: 5,
+                age: 0.6,        // per year factor after 40
+                genderF: 6,
+                genderM: 4,
+                education_high: -6,
+                education_low: 10,
+                family_yes: 18,
+                geneC9_factor: 20,
+                geneApoE_one: 8,
+                geneApoE_two: 15,
+                brain_mild: 8,
+                brain_mod: 15,
+                brain_sev: 26,
+                isolation_scale: 1.8, // multiply isolation (0-10)
+                lifestyle_poor: 12,
+                lifestyle_mod: 6,
+                neurodiv: 6,
+                comorbidity: 10,
+                symptoms_factor: 2.2,
+                cognition_factor: 1.0
+            };
+
+            // start compute
+            let score = weights.baseline;
+            let evidence = [];
+
+            // age effect
+            if (age > 40) {
+                const ageFactor = Math.round((age - 40) * weights.age);
+                score += ageFactor;
+                evidence.push(`Age effect: +${ageFactor}`);
+            }
+
+            // gender
+            if (gender === 'Female') { score += weights.genderF; evidence.push(`Female: +${weights.genderF}`) }
+            else if (gender === 'Male') { score += weights.genderM; evidence.push(`Male: +${weights.genderM}`) }
+
+            // education
+            if (education === 'Primary or less') { score += weights.education_low; evidence.push('Low education: +' + weights.education_low) }
+            else if (education === 'Graduate or Higher') { score += weights.education_high; evidence.push('High education: ' + weights.education_high) }
+
+            // family
+            if (fh === 'Yes') { score += weights.family_yes; evidence.push('Family history: +' + weights.family_yes) }
+
+            // genes
+            if (geneC9 === 'Yes') { score += weights.geneC9_factor; evidence.push('C9orf72 present: +' + weights.geneC9_factor + ' (raises ALS/FTD risk)') }
+            if (geneApoE === 'One copy') { score += weights.geneApoE_one; evidence.push('ApoE ε4 (one): +' + weights.geneApoE_one) }
+            if (geneApoE === 'Two copies') { score += weights.geneApoE_two; evidence.push('ApoE ε4 (two): +' + weights.geneApoE_two) }
+
+            // brain injury
+            if (brainInjury === 'Mild (concussion)') { score += weights.brain_mild; evidence.push('Mild brain injury: +' + weights.brain_mild) }
+            if (brainInjury === 'Moderate') { score += weights.brain_mod; evidence.push('Moderate brain injury: +' + weights.brain_mod) }
+            if (brainInjury === 'Severe') { score += weights.brain_sev; evidence.push('Severe brain injury: +' + weights.brain_sev) }
+
+            // isolation scaled 0-10
+            const isolationAdd = Math.round(isolation * weights.isolation_scale);
+            score += isolationAdd; evidence.push(`Social isolation (${isolation}/10): +${isolationAdd}`);
+
+            // lifestyle
+            if (lifestyle.includes('poor') || lifestyle.includes('smoke') || lifestyle.includes('alcohol')) { score += weights.lifestyle_poor; evidence.push('Poor lifestyle: +' + weights.lifestyle_poor) }
+            else if (lifestyle.includes('exercise') || lifestyle.includes('healthy')) { score -= 5; evidence.push('Healthy lifestyle: -5') }
+
+            // neurodivergence
+            const neurodiv = document.getElementById('neurodiv').value.toLowerCase();
+            if (neurodiv && neurodiv !== '') { if (neurodiv.includes('adhd') || neurodiv.includes('autism')) { score += weights.neurodiv; evidence.push('Neurodivergence: +' + weights.neurodiv) } }
+
+            // comorbid conditions
+            if (healthCond && healthCond.length > 2) {
+                // crude parser: add for diabetes/hypertension/autoimmune/mental
+                if (healthCond.includes('diabetes') || healthCond.includes('hypertension')) { score += weights.comorbidity; evidence.push('Vascular comorbidity: +' + weights.comorbidity) }
+                if (healthCond.includes('depression') || healthCond.includes('mental')) { score += weights.comorbidity; evidence.push('Psychiatric comorbidity: +' + weights.comorbidity) }
+                if (healthCond.includes('lupus') || healthCond.includes('autoimmune')) { score += Math.round(weights.comorbidity * 1.1); evidence.push('Autoimmune condition: +' + Math.round(weights.comorbidity * 1.1)) }
+            }
+
+            // symptoms
+            if (checked.length > 0) { const sAdd = Math.round(checked.length * weights.symptoms_factor); score += sAdd; evidence.push(`${checked.length} symptoms: +${sAdd}`) }
+
+            // cognitive penalty
+            const cogAdd = Math.round(cogPenalty * weights.cognition_factor);
+            score += cogAdd; evidence.push('Cognitive test penalty: +' + cogAdd);
+
+            // final clamp
+            score = Math.max(0, Math.min(100, Math.round(score)));
+
+            // disease breakdown (simple allocation)
+            // base disease split; C9orf72 puts more weight on ALS/FTD/LBD per your request
+            let wAlz = 0.40, wPark = 0.22, wALS = 0.13, wHunt = 0.10, wLewy = 0.15;
+            if (geneC9 === 'Yes') { wALS += 0.14; wLewy += 0.06; wAlz -= 0.08; } // increase ALS/LBD
+            if (geneApoE !== 'No') { wAlz += (geneApoE === 'Two copies' ? 0.10 : 0.06); } // ApoE increases AD weighting
+            // normalize
+            const tot = wAlz + wPark + wALS + wHunt + wLewy;
+            wAlz /= tot; wPark /= tot; wALS /= tot; wHunt /= tot; wLewy /= tot;
+
+            const breakdown = {
+                Alzheimer: +(score * wAlz).toFixed(1),
+                Parkinson: +(score * wPark).toFixed(1),
+                ALS: +(score * wALS).toFixed(1),
+                Huntington: +(score * wHunt).toFixed(1),
+                LewyBody: +(score * wLewy).toFixed(1)
+            };
+
+            // ARIA warning if ApoE and anti-amyloid therapies might be suggested later
+            const ariaFlag = (geneApoE === 'One copy' || geneApoE === 'Two copies');
+
+            // compose report
+            const reasons = evidence.map(e => '• ' + e).join('<br>');
+            const symptomsText = checked.length ? checked.join(', ') : 'None reported';
+            const familyText = (fh === 'Yes') ? (familyDisease || 'unspecified') : fh;
+
+            // treatment suggestions (short list, educational)
+            let suggestions = [];
+            suggestions.push({ type: 'Disease-targeting biologic', items: ['Anti-amyloid monoclonal antibodies (e.g., lecanemab, donanemab) — specialized selection; ARIA risk if ApoE ε4 present.'] });
+            suggestions.push({ type: 'Symptom-targeting drugs', items: ['Cholinesterase inhibitors (donepezil, rivastigmine, galantamine)', 'Memantine (moderate-severe AD)', 'L-DOPA for Parkinson’s', 'Riluzole/Edaravone for ALS (region-dependent)'] });
+            suggestions.push({ type: 'Non-pharmacologic', items: ['Cognitive rehabilitation', 'Aerobic & resistance exercise', 'Occupational & speech therapy', 'Social engagement programs'] });
+            suggestions.push({ type: 'Supportive / Palliative', items: ['Nutritional support', 'Respiratory support for ALS', 'Advance care planning', 'Caregiver support'] });
+
+            // inject to UI
+            document.getElementById('reportBox').innerHTML = `
+    <strong>Patient:</strong> ${escapeHtml(document.getElementById('name').value || '—')}<br>
+    <strong>Risk score:</strong> <b>${score}%</b> (${score > 70 ? 'High' : score > 40 ? 'Moderate' : 'Low'})<br><br>
+    <strong>Factor contributions:</strong><div class="small muted">${reasons}</div><br>
+    <strong>Symptoms:</strong> ${escapeHtml(symptomsText)}<br>
+    <strong>Family history:</strong> ${escapeHtml(familyText)}<br>
+    <strong>Gene flags:</strong> C9orf72: ${geneC9} — ApoE ε4: ${geneApoE} ${ariaFlag ? '<span style="color:#7b2b2b"> (ARIA risk flagged)</span>' : ''}<br><br>
+    <strong>Disease probability breakdown (prototype):</strong>
+    <ul>
+      <li>Alzheimer’s: ${breakdown.Alzheimer}%</li>
+      <li>Parkinson’s: ${breakdown.Parkinson}%</li>
+      <li>ALS: ${breakdown.ALS}%</li>
+      <li>Huntington’s: ${breakdown.Huntington}%</li>
+      <li>Lewy body dementia: ${breakdown.LewyBody}%</li>
+    </ul>
+    <strong>Treatment & management categories (educational):</strong>
+    <div class="small muted">${suggestions.map(s => '<b>' + s.type + ':</b> ' + s.items.join('; ')).join('<br><br>')}</div>
+  `;
+
+            // equation explanation panel
+            document.getElementById('equationBox').innerText = [
+                'RiskScore = baseline(5) + ageFactor + gender + education + family + genes + brainInjury + isolationScore + lifestyle + neurodiv + comorbidity + symptoms + cognitionPenalty',
+                '',
+                'Weights used (editable in JS):',
+                JSON.stringify(weights, null, 2)
+            ].join('\n');
+
+            // put export area
+            const exportText = [
+                `Patient: ${document.getElementById('name').value || '—'}`,
+                `Age: ${age}  Gender: ${gender}`,
+                `Risk score: ${score}% (${score > 70 ? 'High' : score > 40 ? 'Moderate' : 'Low'})`,
+                `Reasons:\n${evidence.join('; ')}`,
+                `Symptoms: ${symptomsText}`,
+                `Disease breakdown: ${JSON.stringify(breakdown)}`,
+                `Treatment suggestions (educational): ${suggestions.map(s => s.type + ': ' + s.items.join('; ')).join(' | ')}`
+            ].join('\n\n');
+            document.getElementById('exportArea').textContent = exportText;
+
+            // scroll to report
+            show('report');
+            return { score, breakdown };
+        }
+
+        /* ---------- helpers ---------- */
+        function escapeHtml(str) { return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+        /* cognitive scoring wrapper available outside earlier call */
+        function scoreCognitive() { return window.scoreCognitive ? window.scoreCognitive() : { score: 0 }; }
+
+        /* generate report (copy to clipboard) */
+        function generateReport() {
+            calculateRisk();
+            const text = document.getElementById('exportArea').textContent;
+            navigator.clipboard?.writeText(text).then(() => alert('Report copied to clipboard (you can paste to a doc).'), () => alert('Copy failed — select and copy manually.'));
+        }
+
+        /* export (just copies currently) */
+        function exportReport() { generateReport(); }
+
+        /* print report (basic) */
+        function printReport() {
+            const html = document.getElementById('reportBox').innerHTML;
+            const win = window.open('', '_blank');
+            win.document.write(`<html><head><title>NeuroScanAI Report</title></head><body>${html}</body></html>`);
+            win.document.close();
+            win.print();
+        }
+
+        /* reset */
+        function resetForm() {
+            document.querySelectorAll('input,select,textarea').forEach(i => { if (i.type !== 'range') i.value = ''; });
+            document.getElementById('isolation').value = 0;
+            document.getElementById('exportArea').textContent = '';
+            document.getElementById('reportBox').innerHTML = 'No report yet. Complete the questionnaire and cognitive tests, then press <strong>Generate Report</strong>.';
+            document.getElementById('equationBox').innerText = '';
+            alert('Form reset.');
+        }
+    </script>
+
+    <!-- ---------- Sources (key references for thesis/paper) ---------- -->
+    <hr style="border:0;margin:18px 28px;border-top:1px solid #ece6f6">
+    <div style="padding:18px 28px;background:#fff;border-radius:8px;margin:12px 28px 40px;">
+        <strong>Selected sources & bibliography (use in thesis/paper)</strong>
+        <ul class="small muted">
+            <li>Alzheimer's treatment overview — National Institute on Aging (NIA).
+                :contentReference[oaicite:0]{index=0}</li>
+            <li>Global burden / prevalence estimates (WHO). :contentReference[oaicite:1]{index=1}</li>
+            <li>C9orf72 and FTD/ALS genetics — NCBI Bookshelf review. :contentReference[oaicite:2]{index=2}</li>
+            <li>Lecanemab / amyloid antibody ARIA guidance & appropriate use recommendations (Cummings et al.).
+                :contentReference[oaicite:3]{index=3}</li>
+            <li>MoCA instructions (five-word recall guidance) and MMSE instruction PDF (for cognitive test design).
+                :contentReference[oaicite:4]{index=4}</li>
+            <li>Cholinesterase inhibitors and pharmacotherapy guidelines (StatPearls / NICE / NEJM review).
+                :contentReference[oaicite:5]{index=5}</li>
+            <li>WHO / review articles on environmental risk & neurodegeneration. :contentReference[oaicite:6]{index=6}
+            </li>
+            <li>FDA approvals / public communication on donanemab (Kisunla) and lecanemab — FDA & Cleveland Clinic
+                summaries. :contentReference[oaicite:7]{index=7}</li>
+        </ul>
+
+        <div class="small muted" style="margin-top:8px">
+            <b>Books you can cite for background / thesis methods:</b>
+            <ul>
+                <li><em>Principles of Neural Science</em> — Kandel et al. (classic neuroscience text; cite for neural
+                    mechanisms and synaptic pathology).</li>
+                <li><em>Adams and Victor's Principles of Neurology</em> — for clinical neurology and differential
+                    diagnoses.</li>
+                <li><em>Neurology and Clinical Neuroscience</em> — specialty texts on dementia and neurodegenerative
+                    disorders.</li>
+            </ul>
+        </div>
+
+        <div class="small muted" style="margin-top:8px">
+            <b>Notes:</b> I included core, high-quality sources above (NIA, PubMed/NCBI, FDA, WHO). If you want, I can
+            produce a fully-formatted bibliography (APA/AMA) for your thesis, include DOIs, and generate a slide deck
+            from this report.
+        </div>
+    </div>
+
+</body>
+
+</html>

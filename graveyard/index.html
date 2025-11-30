@@ -1,0 +1,33 @@
+<!-- inside static/index.html, replace the fetch /predict handling with this -->
+<script>
+    document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const file = document.getElementById("fileInput").files[0];
+        if (!file) { alert("choose a file"); return; }
+        const scanner = document.getElementById("scanner").value;
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("scanner_type", scanner);
+        const res = await fetch("/predict", { method: "POST", body: fd });
+        const data = await res.json();
+
+        // Build a nicer result summary in the UI
+        let out = "";
+        if (data.error) {
+            out = "Error: " + data.error;
+        } else {
+            out += "Prediction: " + data.prediction.top + " (confidence: " + (data.prediction.confidence || "N/A") + ")\n\n";
+            out += "Suggested actions & treatments:\n";
+            (data.prediction.treatment_suggestions || []).forEach((s, idx) => {
+                out += `${idx + 1}. ${s.name} — ${s.notes}\n`;
+                if (s.source_links) {
+                    for (const [k, u] of Object.entries(s.source_links)) {
+                        if (u) out += `   Source: ${k} — ${u}\n`;
+                    }
+                }
+            });
+            out += "\n*** DISCLAMER: " + (data.prediction.disclaimer || "Consult a clinician") + " ***\n";
+        }
+        document.getElementById("out").innerText = out;
+    });
+</script>

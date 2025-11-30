@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroScanAI — Neurodegeneration Research Dashboard</title>
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f6f5fa;
+            color: #1e1e2e;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        header {
+            background: #4c3c82;
+            color: white;
+            padding: 20px 30px;
+            font-size: 22px;
+            font-weight: 600;
+            border-bottom: 3px solid #c2b8e3;
+        }
+
+        nav {
+            background: #ebe8f5;
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            border-right: 1px solid #d4cee7;
+            overflow-y: auto;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            text-align: left;
+            padding: 12px 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            color: #372f58;
+            transition: background 0.2s;
+        }
+
+        nav button:hover {
+            background: #d6d0ea;
+        }
+
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 50px;
+        }
+
+        h2 {
+            color: #433678;
+            margin-top: 0;
+        }
+
+        .section {
+            display: none;
+            margin-bottom: 40px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: 500;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: #fdfdfd;
+        }
+
+        .analyze-btn {
+            background: #5b4a9e;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+
+        .analyze-btn:hover {
+            background: #493c82;
+        }
+
+        .result-box {
+            background: #f1eef9;
+            border-left: 5px solid #5b4a9e;
+            padding: 15px;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        details {
+            background: #f7f5fb;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 10px;
+            padding: 10px 15px;
+        }
+
+        details summary {
+            font-weight: 600;
+            cursor: pointer;
+            color: #4b3b75;
+        }
+
+        .rating-range {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .disease-checkbox {
+            display: inline-block;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <button onclick="showPage('scan')">🧠 Scan Analysis</button>
+        <button onclick="showPage('quiz')">📋 Patient Data Form</button>
+        <button onclick="showPage('results')">📊 AI Simulation Report</button>
+        <button onclick="showPage('reference')">📚 Research Reference</button>
+        <button onclick="showPage('treatment')">⚗️ Therapeutic Database</button>
+        <button onclick="showPage('disclaimer')">⚖️ Disclaimer</button>
+    </nav>
+    <main>
+        <header>NeuroScanAI — Neurodegeneration Research Dashboard</header>
+
+        <!-- SCAN -->
+        <div id="scan" class="section" style="display:block;">
+            <h2>Neural Imaging Analysis</h2>
+            <label>Select Imaging Modality:</label>
+            <select id="scanType">
+                <option>MRI</option>
+                <option>fMRI</option>
+                <option>PET</option>
+                <option>CT</option>
+            </select>
+            <label>Upload Scan File:</label>
+            <input type="file" accept="image/*,.nii,.dcm">
+            <div class="result-box" style="margin-top:20px;">
+                <strong>Status:</strong> Awaiting scan upload...
+                <p>Upload brain imaging to simulate volumetric analysis and protein-aggregation visualization.</p>
+            </div>
+        </div>
+
+        <!-- QUESTIONNAIRE -->
+        <div id="quiz" class="section">
+            <h2>Patient Data Form</h2>
+            <label>Age:</label><input type="number" id="age">
+            <label>Gender:</label>
+            <select id="gender">
+                <option>Female</option>
+                <option>Male</option>
+                <option>Other</option>
+            </select>
+            <label>Education Level:</label>
+            <select id="education">
+                <option>Primary</option>
+                <option>Secondary</option>
+                <option>Higher</option>
+                <option>Postgraduate</option>
+            </select>
+            <label>History of Brain Injury:</label>
+            <select id="brainInjury">
+                <option>No</option>
+                <option>Yes</option>
+            </select>
+
+            <label>Social Isolation Level:</label>
+            <input type="range" min="1" max="5" id="isolation" value="3">
+            <div class="rating-range"><span>Low</span><span>High</span></div>
+
+            <label>Family History of ND:</label>
+            <select id="fhistory" onchange="toggleDiseaseInput()">
+                <option>No</option>
+                <option>Yes</option>
+                <option>Unsure</option>
+            </select>
+            <div id="familyDiseaseDiv" style="display:none;">
+                <label>Specify disease(s):</label>
+                <div class="checkbox-group">
+                    <label class="disease-checkbox"><input type="checkbox" value="Alzheimer’s"> Alzheimer’s</label>
+                    <label class="disease-checkbox"><input type="checkbox" value="Parkinson’s"> Parkinson’s</label>
+                    <label class="disease-checkbox"><input type="checkbox" value="ALS"> ALS</label>
+                    <label class="disease-checkbox"><input type="checkbox" value="FTD"> FTD</label>
+                    <label class="disease-checkbox"><input type="checkbox" value="Lewy Body"> Lewy Body</label>
+                </div>
+            </div>
+
+            <label>Neurodivergent Conditions:</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox"> ADHD</label>
+                <label><input type="checkbox"> Autism</label>
+                <label><input type="checkbox"> Dyslexia</label>
+                <label><input type="checkbox"> OCD</label>
+            </div>
+
+            <label>Comorbid Illnesses:</label>
+            <textarea id="healthCond" placeholder="e.g., Diabetes, Depression, Cardiovascular disease"></textarea>
+
+            <label>Lifestyle Quality:</label>
+            <select id="lifestyle">
+                <option>Poor</option>
+                <option>Moderate</option>
+                <option>Good</option>
+                <option>Excellent</option>
+            </select>
+
+            <label>Gene Presence:</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" id="c9gene"> C9orf72</label>
+                <label><input type="checkbox" id="apoe"> ApoE ε4</label>
+                <label><input type="checkbox" id="mapt"> MAPT (Tau)</label>
+                <label><input type="checkbox" id="snca"> SNCA (α-Synuclein)</label>
+            </div>
+
+            <label>Current Symptoms:</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox"> Memory decline</label>
+                <label><input type="checkbox"> Motor tremors</label>
+                <label><input type="checkbox"> Mood changes</label>
+                <label><input type="checkbox"> Speech impairment</label>
+                <label><input type="checkbox"> Disorientation</label>
+            </div>
+
+            <button class="analyze-btn" onclick="calculateRisk()">Run Simulation</button>
+        </div>
+
+        <!-- RESULTS -->
+        <div id="results" class="section">
+            <h2>AI Simulation Report</h2>
+            <div id="reportBox" class="result-box">
+                Enter patient factors to generate AI-driven risk model simulation.
+            </div>
+        </div>
+
+        <!-- REFERENCES -->
+        <div id="reference" class="section">
+            <h2>Reference Sheet</h2>
+            <details>
+                <summary>Risk Factor Ranges</summary>
+                <ul>
+                    <li><b>Education:</b> Lower education = +10% risk</li>
+                    <li><b>Brain Injury:</b> Yes = +12%</li>
+                    <li><b>Social Isolation:</b> Moderate = +5%, High = +10%</li>
+                    <li><b>Lifestyle:</b> Poor = +15%, Moderate = +8%, Good = -5%</li>
+                    <li><b>Genetic Factors:</b> Each major ND gene = +10–15%</li>
+                </ul>
+            </details>
+            <details>
+                <summary>Neurobiology Overview</summary>
+                <p>Neurodegenerative disorders are characterized by progressive loss of neuronal structure and function,
+                    involving protein misfolding (Tau, β-amyloid, α-synuclein, TDP-43).</p>
+            </details>
+        </div>
+
+        <!-- TREATMENT LIBRARY -->
+        <div id="treatment" class="section">
+            <h2>Therapeutic Database</h2>
+            <details>
+                <summary>Pharmacological</summary>
+                <ul>
+                    <li>Donepezil — acetylcholinesterase inhibitor, improves cognition in Alzheimer’s.</li>
+                    <li>Memantine — NMDA receptor antagonist reducing glutamate excitotoxicity.</li>
+                    <li>Lecanemab — monoclonal antibody targeting amyloid-beta aggregates.</li>
+                </ul>
+            </details>
+            <details>
+                <summary>Non-Pharmacological</summary>
+                <ul>
+                    <li>Exercise and cognitive training to enhance neuroplasticity.</li>
+                    <li>Social and sensory stimulation therapies.</li>
+                    <li>Sleep optimization to reduce amyloid accumulation.</li>
+                </ul>
+            </details>
+        </div>
+
+        <!-- DISCLAIMER -->
+        <div id="disclaimer" class="section">
+            <h2>Disclaimer</h2>
+            <p>This simulation is an academic demonstration and does not represent real diagnostic capability.
+                Data and output are illustrative and based on current research literature, not individualized clinical
+                data.</p>
+        </div>
+    </main>
+
+    <script>
+        function showPage(id) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function toggleDiseaseInput() {
+            const show = document.getElementById("fhistory").value === "Yes";
+            document.getElementById("familyDiseaseDiv").style.display = show ? "block" : "none";
+        }
+
+        function calculateRisk() {
+            let risk = 5;
+            const age = +document.getElementById("age").value || 0;
+            const brainInjury = document.getElementById("brainInjury").value;
+            const isolation = +document.getElementById("isolation").value;
+            const lifestyle = document.getElementById("lifestyle").value;
+            const education = document.getElementById("education").value;
+
+            if (age > 60) risk += 25;
+            else if (age > 45) risk += 10;
+            if (brainInjury === "Yes") risk += 12;
+            if (isolation >= 4) risk += 8;
+            if (education === "Primary") risk += 10;
+            if (lifestyle === "Poor") risk += 15;
+            if (lifestyle === "Moderate") risk += 8;
+            if (lifestyle === "Good") risk -= 5;
+
+            ["c9gene", "apoe", "mapt", "snca"].forEach(id => {
+                if (document.getElementById(id).checked) risk += 10;
+            });
+
+            risk = Math.min(100, Math.max(0, risk));
+            const cat = risk > 70 ? "High" : risk > 40 ? "Moderate" : "Low";
+            const alz = (risk * 0.4).toFixed(1),
+                park = (risk * 0.25).toFixed(1),
+                als = (risk * 0.15).toFixed(1),
+                ftd = (risk * 0.1).toFixed(1),
+                lewy = (risk * 0.1).toFixed(1);
+
+            document.getElementById("reportBox").innerHTML = `
+        <strong>Simulated ND Risk:</strong> ${risk}% (${cat})<br><br>
+        <b>Disease Probability Estimates:</b>
+        <ul>
+          <li>Alzheimer’s: ${alz}%</li>
+          <li>Parkinson’s: ${park}%</li>
+          <li>ALS: ${als}%</li>
+          <li>FTD: ${ftd}%</li>
+          <li>Lewy Body: ${lewy}%</li>
+        </ul>
+        <b>Interpretation:</b> 
+        <p>This simulation aggregates multifactorial contributors including age, genetics, education, and environmental factors to visualize population-level ND likelihood.  
+        Output values are not predictive of any individual’s condition.</p>`;
+            showPage("results");
+        }
+    </script>
+</body>
+
+</html>

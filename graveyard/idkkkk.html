@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>NeuroScan — Brain Toggle Sidebar Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sb-w: 260px;
+            --sb-collapsed-w: 64px;
+            --accent: #5b4b8a;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, Arial, sans-serif;
+            background: #f8f7fc;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ---- SIDEBAR ---- */
+        #sidebar {
+            width: var(--sb-w);
+            background: #e9e5f5;
+            padding: 18px;
+            transition: width .28s ease, left .28s ease;
+            box-shadow: inset -1px 0 0 #d4cbe7;
+            position: relative;
+            z-index: 50;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        #sidebar.collapsed {
+            width: var(--sb-collapsed-w);
+        }
+
+        /* sidebar items */
+        #sidebar .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        #sidebar .logo .text {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        #sidebar.collapsed .logo .text {
+            opacity: 0;
+            transform: translateX(-12px);
+            transition: opacity .15s, transform .18s
+        }
+
+        nav {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        nav button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 0;
+            background: none;
+            color: #372f58;
+            cursor: pointer;
+            text-align: left;
+            font-size: 15px;
+        }
+
+        nav button .label {
+            transition: opacity .18s, transform .18s;
+        }
+
+        #sidebar.collapsed nav button .label {
+            opacity: 0;
+            transform: translateX(-8px);
+            pointer-events: none;
+        }
+
+        /* slim icons only when collapsed */
+        nav button .icon {
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border-radius: 6px;
+        }
+
+        /* ---- CONTENT ---- */
+        main {
+            flex: 1;
+            padding: 24px;
+            transition: margin-left .28s ease;
+            min-height: 100vh;
+        }
+
+        /* when sidebar collapsed give main more room (small margin for visual) */
+        .with-collapsed-sidebar main {
+            margin-left: calc(var(--sb-collapsed-w) - var(--sb-w));
+        }
+
+        header {
+            background: var(--accent);
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* ---- BRAIN TOGGLE BUTTON ---- */
+        #brainToggle {
+            position: fixed;
+            top: 12px;
+            left: 12px;
+            z-index: 999;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: inline-grid;
+            place-items: center;
+            background: linear-gradient(180deg, #6a5ca4, #524089);
+            color: white;
+            border: 0;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(10, 10, 25, 0.12);
+        }
+
+        /* a little rotate animation when toggled */
+        #brainToggle[data-open="true"] svg {
+            transform: rotate(18deg) scale(1.03);
+            transition: transform .25s ease;
+        }
+
+        #brainToggle svg {
+            width: 22px;
+            height: 22px;
+            transition: transform .25s ease;
+        }
+
+        /* ---- MOBILE: overlay + sliding sidebar ---- */
+        @media (max-width:800px) {
+            #sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100vh;
+                width: 260px;
+                transition: left .28s ease;
+            }
+
+            #sidebar.open {
+                left: 0;
+            }
+
+            main {
+                padding: 18px;
+            }
+
+            /* brain button sits above everything on mobile too */
+        }
+
+        /* make small demo content look decent */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 6px 20px rgba(10, 10, 25, 0.04);
+            margin-bottom: 14px;
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            display: block;
+            margin: 8px 0;
+        }
+
+        .muted {
+            color: #6f6f7a;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Brain toggle (click it to collapse/expand the sidebar) -->
+    <button id="brainToggle" aria-label="Toggle menu" title="Toggle menu" data-open="false">
+        <!-- simple brain SVG -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 12c0-4.418-3.582-8-8-8S4 7.582 4 12c0 .647.084 1.277.243 1.875"></path>
+            <path d="M8.5 20a2.5 2.5 0 0 1-2.5-2.5V15"></path>
+            <path d="M15.5 20a2.5 2.5 0 0 0 2.5-2.5V15"></path>
+        </svg>
+    </button>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" aria-label="Main menu">
+        <div class="logo">
+            <div
+                style="width:40px;height:40px;border-radius:8px;background:linear-gradient(180deg,#6a5ca4,#7e66c6);display:flex;align-items:center;justify-content:center;color:white;font-weight:700">
+                NS</div>
+            <div class="text">NeuroScan</div>
+        </div>
+
+        <nav>
+            <button onclick="showPage('scan')"><span class="icon">🧠</span><span class="label">Scan
+                    Analysis</span></button>
+            <button onclick="showPage('cog')"><span class="icon">📝</span><span class="label">Cognitive
+                    Tests</span></button>
+            <button onclick="showPage('quiz')"><span class="icon">📋</span><span
+                    class="label">Questionnaire</span></button>
+            <button onclick="showPage('results')"><span class="icon">📊</span><span
+                    class="label">Results</span></button>
+            <button onclick="showPage('ref')"><span class="icon">📚</span><span class="label">Reference</span></button>
+        </nav>
+
+        <div style="margin-top:auto;font-size:13px;color:#475066">v1.0 • Research demo</div>
+    </aside>
+
+    <!-- Main area -->
+    <div id="app" style="flex:1">
+        <main>
+            <header>
+                <div style="font-weight:700">NeuroScan</div>
+                <div style="margin-left:auto" class="muted">Demo — click the brain to collapse</div>
+            </header>
+
+            <section id="scan" class="card" style="display:block;margin-top:14px">
+                <h3>Scan Analysis</h3>
+                <p class="muted">Upload MRI / PET (demo)</p>
+                <input type="file" />
+            </section>
+
+            <section id="cog" class="card" style="display:none">
+                <h3>Cognitive Tests</h3>
+                <p class="muted">Clock drawing demo below:</p>
+                <canvas id="demoCanvas" width="300" height="200"></canvas>
+                <button onclick="clearDemo()">Clear</button>
+            </section>
+
+            <section id="quiz" class="card" style="display:none">
+                <h3>Questionnaire</h3>
+                <p class="muted">Sample fields</p>
+                <input placeholder="Age" type="number" />
+            </section>
+
+            <section id="results" class="card" style="display:none">
+                <h3>Results</h3>
+                <p class="muted">Report area</p>
+            </section>
+
+            <section id="ref" class="card" style="display:none">
+                <h3>Reference</h3>
+                <p class="muted">Helpful sheets</p>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // --- Helper: show page content ---
+        function showPage(id) {
+            document.querySelectorAll('main section').forEach(s => s.style.display = 'none');
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'block';
+
+            // On mobile, close sidebar after tapping a nav item
+            if (window.innerWidth <= 800) {
+                document.getElementById('sidebar').classList.remove('open');
+                document.getElementById('brainToggle').setAttribute('data-open', 'false');
+            }
+        }
+
+        // --- Brain toggle behavior ---
+        const brain = document.getElementById('brainToggle');
+        const sidebar = document.getElementById('sidebar');
+        const app = document.body;
+
+        function setCollapsed(collapsed) {
+            if (collapsed) {
+                sidebar.classList.add('collapsed');
+                // for mobile (if you want to hide it completely), remove 'open'
+                if (window.innerWidth <= 800) sidebar.classList.remove('open');
+                brain.setAttribute('data-open', 'true');
+                app.classList.add('with-collapsed-sidebar');
+            } else {
+                sidebar.classList.remove('collapsed');
+                brain.setAttribute('data-open', 'false');
+                app.classList.remove('with-collapsed-sidebar');
+            }
+        }
+
+        // clicking the brain toggles collapsed state; a long-press on mobile will open the drawer
+        brain.addEventListener('click', () => {
+            const collapsed = sidebar.classList.contains('collapsed');
+            // On narrow screens, interpret click as opening drawer if closed.
+            if (window.innerWidth <= 800) {
+                if (!sidebar.classList.contains('open')) {
+                    sidebar.classList.add('open');
+                    brain.setAttribute('data-open', 'true');
+                    return;
+                } else {
+                    // if already open, collapse into mini mode
+                    setCollapsed(!collapsed);
+                }
+            } else {
+                // desktop: standard collapse/expand
+                setCollapsed(!collapsed);
+            }
+        });
+
+        // Close mobile sidebar if you tap outside it
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 800) {
+                const isClickInside = sidebar.contains(e.target) || brain.contains(e.target);
+                if (!isClickInside) {
+                    sidebar.classList.remove('open');
+                    brain.setAttribute('data-open', 'false');
+                }
+            }
+        });
+
+        // keyboard accessibility: press 'm' to toggle sidebar
+        document.addEventListener('keydown', (e) => { if (e.key === 'm') brain.click(); });
+
+        // --- Simple demo drawing so canvas is interactive and doesn't block clicks elsewhere ---
+        (function demoCanvas() {
+            const c = document.getElementById('demoCanvas');
+            const ctx = c.getContext('2d');
+            let drawing = false;
+            function pos(e) {
+                const r = c.getBoundingClientRect();
+                return { x: (e.touches ? e.touches[0].clientX : e.clientX) - r.left, y: (e.touches ? e.touches[0].clientY : e.clientY) - r.top };
+            }
+            c.addEventListener('mousedown', (e) => { drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+            c.addEventListener('mousemove', (e) => { if (!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+            c.addEventListener('mouseup', () => { drawing = false; ctx.closePath(); });
+            c.addEventListener('mouseleave', () => { drawing = false; });
+            c.addEventListener('touchstart', (e) => { drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+            c.addEventListener('touchmove', (e) => { if (!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
+            c.addEventListener('touchend', () => { drawing = false; ctx.closePath(); });
+            window.clearDemo = () => { ctx.clearRect(0, 0, c.width, c.height); }
+        })();
+    </script>
+</body>
+
+</html>

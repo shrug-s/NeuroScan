@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroScanAI — Clinical Research Edition</title>
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f8f7fc;
+            color: #1f1f1f;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        header {
+            background: #5b4b8a;
+            color: white;
+            padding: 20px 30px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        nav {
+            background: #e9e5f5;
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: inset -1px 0 0 #d4cbe7;
+            overflow-y: auto;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            text-align: left;
+            padding: 12px 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            color: #372f58;
+            transition: background 0.2s;
+        }
+
+        nav button:hover {
+            background: #d6d0ea;
+        }
+
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 50px;
+        }
+
+        h2 {
+            color: #4b3b75;
+        }
+
+        .section {
+            display: none;
+            margin-bottom: 40px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .analyze-btn {
+            background: #6a5ca4;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .analyze-btn:hover {
+            background: #594c8b;
+        }
+
+        .result-box {
+            background: #f3f1f9;
+            border-left: 5px solid #6a5ca4;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        details {
+            background: #f7f5fb;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 10px;
+            padding: 10px 15px;
+        }
+
+        details summary {
+            font-weight: 600;
+            cursor: pointer;
+            color: #4b3b75;
+        }
+
+        /* Gene toggle switches */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .toggle {
+            appearance: none;
+            width: 45px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            outline: none;
+            transition: background 0.3s;
+            margin-right: 10px;
+        }
+
+        .toggle:checked {
+            background: #6a5ca4;
+        }
+
+        .toggle::before {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 2px;
+            left: 2px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle:checked::before {
+            transform: translateX(21px);
+        }
+
+        /* Symptom buttons */
+        .symptom-btn {
+            display: inline-block;
+            background: #e0dcf4;
+            color: #3b3263;
+            padding: 6px 12px;
+            border-radius: 6px;
+            margin: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .symptom-btn.active {
+            background: #6a5ca4;
+            color: white;
+        }
+
+        .symptom-btn:hover {
+            background: #c9c2ea;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <button onclick="showPage('scan')">🧠 Scan Analysis</button>
+        <button onclick="showPage('quiz')">📋 Patient Questionnaire</button>
+        <button onclick="showPage('results')">📊 Prediction & Report</button>
+        <button onclick="showPage('reference')">📚 Reference Sheets</button>
+        <button onclick="showPage('treatment')">⚗️ Treatment Library</button>
+        <button onclick="showPage('disclaimer')">⚖️ Disclaimer & Sources</button>
+    </nav>
+
+    <main>
+        <header>NeuroScanAI — Clinical Research Edition</header>
+
+        <!-- SCAN -->
+        <div id="scan" class="section" style="display:block;">
+            <h2>Scan Analysis</h2>
+            <label>Select Scan Type:</label>
+            <select id="scanType">
+                <option>MRI</option>
+                <option>fMRI</option>
+                <option>PET</option>
+                <option>CT</option>
+            </select>
+            <label>Upload Scan:</label>
+            <input type="file" accept="image/*,.nii,.dcm">
+            <div class="result-box" style="margin-top:20px;">
+                <strong>Status:</strong> Awaiting scan input...
+            </div>
+        </div>
+
+        <!-- QUESTIONNAIRE -->
+        <div id="quiz" class="section">
+            <h2>Patient Questionnaire</h2>
+            <label>Age:</label><input type="number" id="age">
+            <label>Gender:</label>
+            <select id="gender">
+                <option>Female</option>
+                <option>Male</option>
+                <option>Other</option>
+            </select>
+            <label>Education Level:</label>
+            <select id="education">
+                <option>Primary</option>
+                <option>Secondary</option>
+                <option>Higher</option>
+                <option>Postgraduate</option>
+            </select>
+            <label>Brain Injury History:</label>
+            <select id="brainInjury">
+                <option>No</option>
+                <option>Yes</option>
+            </select>
+            <label>Social Isolation (1=low, 5=high):</label>
+            <input type="range" min="1" max="5" id="isolation" value="3">
+
+            <label>Family History:</label>
+            <select id="fhistory" onchange="toggleDiseaseInput()">
+                <option>No</option>
+                <option>Yes</option>
+                <option>Unsure</option>
+            </select>
+            <div id="familyDiseaseDiv" style="display:none;">
+                <label>Specify disease(s):</label>
+                <input id="familyDisease" placeholder="e.g., Alzheimer’s, Parkinson’s">
+            </div>
+
+            <label>Neurodivergent Conditions:</label>
+            <input id="neurodiv" placeholder="e.g., ADHD, Autism">
+
+            <label>Health Conditions:</label>
+            <input id="healthCond" placeholder="e.g., Diabetes, Hypertension, Depression">
+
+            <h3>Genetic Risk Factors:</h3>
+            <div class="toggle-container">
+                <input type="checkbox" id="c9gene" class="toggle">
+                <label for="c9gene">C9orf72 gene present</label>
+            </div>
+            <div class="toggle-container">
+                <input type="checkbox" id="apoe" class="toggle">
+                <label for="apoe">ApoE ε4 gene present</label>
+            </div>
+
+            <h3>Current Symptoms:</h3>
+            <div id="symptomList">
+                <span class="symptom-btn">Memory Loss</span>
+                <span class="symptom-btn">Confusion</span>
+                <span class="symptom-btn">Tremors</span>
+                <span class="symptom-btn">Poor Coordination</span>
+                <span class="symptom-btn">Mood Swings</span>
+                <span class="symptom-btn">Speech Difficulty</span>
+                <span class="symptom-btn">Swallowing Difficulty</span>
+                <span class="symptom-btn">Insomnia</span>
+                <span class="symptom-btn">Depression</span>
+                <span class="symptom-btn">Agitation</span>
+            </div>
+
+            <button class="analyze-btn" onclick="calculateRisk()">Analyze Risk</button>
+        </div>
+
+        <!-- RESULTS -->
+        <div id="results" class="section">
+            <h2>Prediction & Report</h2>
+            <div id="reportBox" class="result-box">
+                Complete questionnaire to generate report.
+            </div>
+        </div>
+
+        <!-- REFERENCE SHEET -->
+        <div id="reference" class="section">
+            <h2>Reference Sheets</h2>
+
+            <details>
+                <summary>Sleep Quality</summary>
+                <ul>
+                    <li>Poor: < 6 hrs/night → +10% ND risk</li>
+                    <li>Moderate: 6–7 hrs/night → +3% ND risk</li>
+                    <li>Good: 7–9 hrs/night, dark quiet room → -5% ND risk</li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>Physical Activity</summary>
+                <ul>
+                    <li>Poor: Sedentary → +10% ND risk</li>
+                    <li>Moderate: 1–2 light workouts/week → +3% ND risk</li>
+                    <li>Good: ≥150 mins/week moderate exercise → -6% ND risk</li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>Diet</summary>
+                <ul>
+                    <li>Poor: High sugar/alcohol intake → +8% ND risk</li>
+                    <li>Moderate: Mixed diet → ±0% ND risk</li>
+                    <li>Good: Mediterranean/omega-3 rich → -5% ND risk</li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>Social Engagement</summary>
+                <ul>
+                    <li>Poor: Isolated or withdrawn → +7% ND risk</li>
+                    <li>Moderate: Occasional contact → +2% ND risk</li>
+                    <li>Good: Regular social interaction → -5% ND risk</li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>Protein Pathology Summary</summary>
+                <ul>
+                    <li><b>Tau:</b> Alzheimer’s, FTD</li>
+                    <li><b>β-Amyloid:</b> Alzheimer’s plaques</li>
+                    <li><b>α-Synuclein:</b> Parkinson’s, Lewy Body</li>
+                    <li><b>TDP-43:</b> FTD, ALS</li>
+                    <li><b>Prions:</b> CJD (Prion disease)</li>
+                </ul>
+            </details>
+        </div>
+
+        <!-- TREATMENT LIBRARY -->
+        <div id="treatment" class="section">
+            <h2>Treatment Library</h2>
+            <details>
+                <summary>Pharmacological</summary>
+                <ul>
+                    <li><b>Cholinesterase inhibitors:</b> Donepezil (Aricept), Rivastigmine (Exelon), Galantamine
+                        (Razadyne)</li>
+                    <li><b>Glutamate regulators:</b> Memantine (Namenda)</li>
+                    <li><b>Amyloid-targeting:</b> Lecanemab (Leqembi), Donanemab (Kisunla)</li>
+                    <li><b>Behavioral meds:</b> Suvorexant (Belsomra), Brexpiprazole (Rexulti)</li>
+                </ul>
+            </details>
+            <details>
+                <summary>Non-Pharmacological</summary>
+                <ul>
+                    <li>Physical, speech, and occupational therapy</li>
+                    <li>Cognitive stimulation and memory programs</li>
+                    <li>Routine building and structured environment</li>
+                </ul>
+            </details>
+        </div>
+
+        <!-- DISCLAIMER -->
+        <div id="disclaimer" class="section">
+            <h2>Disclaimer & Sources</h2>
+            <p>This is a research and educational prototype. It is not a medical diagnostic tool and should not replace
+                professional clinical evaluation.</p>
+            <h3>Sources</h3>
+            <ul>
+                <li>World Health Organization (2023). <i>Neurological Disorders: Public Health Challenges.</i></li>
+                <li>Kandel et al., <i>Principles of Neural Science, 6th Ed.</i></li>
+                <li>National Institute on Aging — Alzheimer’s Research.</li>
+                <li>NIH Neurodegenerative Disease Publications.</li>
+            </ul>
+        </div>
+    </main>
+
+    <script>
+        function showPage(id) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function toggleDiseaseInput() {
+            const show = document.getElementById("fhistory").value === "Yes";
+            document.getElementById("familyDiseaseDiv").style.display = show ? "block" : "none";
+        }
+
+        // symptom button toggle
+        document.addEventListener('click', e => {
+            if (e.target.classList.contains('symptom-btn')) {
+                e.target.classList.toggle('active');
+            }
+        });
+
+        function calculateRisk() {
+            let risk = 5, reasons = [];
+            const age = +document.getElementById("age").value || 0;
+            if (age > 60) { risk += 25; reasons.push("Older age increases ND risk."); }
+            else if (age > 40) risk += 10;
+            if (document.getElementById("brainInjury").value === "Yes") { risk += 10; reasons.push("History of brain injury."); }
+            if (+document.getElementById("isolation").value >= 4) { risk += 8; reasons.push("High social isolation level."); }
+            if (document.getElementById("c9gene").checked) { risk += 12; reasons.push("C9orf72 gene detected."); }
+            if (document.getElementById("apoe").checked) { risk += 10; reasons.push("ApoE ε4 gene increases ARIA risk."); }
+            if (document.getElementById("fhistory").value === "Yes") { risk += 15; reasons.push("Family ND history."); }
+
+            const cond = document.getElementById("healthCond").value.toLowerCase();
+            if (cond.includes("diabetes") || cond.includes("depression")) { risk += 8; reasons.push("Existing chronic/mental condition."); }
+
+            const activeSymptoms = Array.from(document.querySelectorAll(".symptom-btn.active")).length;
+            if (activeSymptoms >= 3) { risk += 15; reasons.push("Multiple neurological symptoms detected."); }
+
+            risk = Math.min(100, Math.max(0, risk));
+            const cat = risk > 70 ? "High" : risk > 40 ? "Moderate" : "Low";
+            document.getElementById("reportBox").innerHTML = `
+      <strong>Overall ND Risk:</strong> ${risk}% (${cat})<br><br>
+      <b>Risk Factors:</b><ul>${reasons.map(r => `<li>${r}</li>`).join('')}</ul>
+      <b>Next Steps:</b><ul><li>Consider cognitive screening (MMSE/MoCA).</li><li>Consult neurology if risk ≥ Moderate.</li></ul>`;
+            showPage("results");
+        }
+    </script>
+</body>
+
+</html>
